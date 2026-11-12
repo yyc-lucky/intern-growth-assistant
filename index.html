@@ -1,0 +1,3335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>AI 实习成长助手</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand:'#2E6F66', branddeep:'#22544C', sage:'#8FBFA8', lgreen:'#D3E8DC', mist:'#EAF4EF',
+        blueg:'#4E86A8', skyb:'#B7D6E4', lakeb:'#DCEBF2', cloudb:'#EDF5F9',
+        teal:'#3E8E86', lteal:'#7FBCB4', mint:'#C3E2D6', palteal:'#E6F3F0',
+        bg:'#F6FAF8', card:'#FFFFFF', subbg:'#EEF4F2',
+        t1:'#1B2D2B', t2:'#5A6D6A', t3:'#8B9C98', line:'#E7EFEB', disabled:'#C8D4CF'
+      },
+      borderRadius:{ xs:'6px', sm:'8px', md:'10px', lg:'12px', xl:'16px', xxl:'20px' },
+      boxShadow:{
+        soft:'0 1px 2px rgba(28,48,45,0.03)',
+        card:'0 1px 2px rgba(28,48,45,0.03), 0 10px 26px -16px rgba(28,48,45,0.20)',
+        lift:'0 14px 34px -16px rgba(28,48,45,0.30)'
+      }
+    }
+  }
+}
+</script>
+<style>
+  *{ -webkit-tap-highlight-color:transparent; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    background:radial-gradient(900px 460px at 50% -10%, #E6F3EE 0%, #F6FAF8 48%, #F2F8FA 100%);
+    background-attachment:fixed; color:#1B2D2B;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+  .press{ transition:opacity .15s ease, transform .15s ease; }
+  .press:active{ opacity:.7; transform:scale(.99); }
+  .grad-hero{ background-image:linear-gradient(135deg,#2E6F66 0%,#357C7C 46%,#4E86A8 100%); }
+  .grad-soft{ background-image:linear-gradient(135deg,#E9F4EF 0%,#EDF6FA 100%); }
+  .grad-ai{ background-image:linear-gradient(135deg,#E6F3F0 0%,#EAF3F9 100%); }
+  .num{ font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+
+  /* ---------- 版式 ---------- */
+  .h1{ font-size:22px; line-height:1.28; font-weight:600; letter-spacing:-0.02em; color:#1B2D2B; }
+  .sub{ font-size:11.5px; line-height:1.6; color:#8B9C98; margin-top:5px; letter-spacing:.01em; }
+  .sec{ display:flex; align-items:baseline; justify-content:space-between; padding:0 20px; margin:26px 0 10px; }
+  .sec h2{ font-size:14.5px; font-weight:600; letter-spacing:-0.01em; color:#1B2D2B; }
+  .sec .more{ font-size:11px; color:#8B9C98; }
+  .card{ background:#fff; border:1px solid #E7EFEB; border-radius:16px; box-shadow:0 1px 2px rgba(28,48,45,.03), 0 10px 26px -16px rgba(28,48,45,.20); }
+  .divide-line > * + *{ border-top:1px solid #EFF4F2; }
+
+  /* ---------- 导航 ---------- */
+  .tab-btn{ color:#8B9C98; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; flex:1; padding:7px 0 6px; transition:color .18s ease; }
+  .tab-btn .nav-ico{ width:40px; height:25px; border-radius:9px; display:flex; align-items:center; justify-content:center; transition:background-color .2s ease, color .2s ease; }
+  .tab-btn.text-brand .nav-ico{ background:#E9F4F0; }
+  .tab-btn .nav-label{ font-size:10px; letter-spacing:.02em; }
+  .tab-btn.text-brand .nav-label{ font-weight:500; }
+  .fab{ width:48px; height:48px; border-radius:17px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 22px -8px rgba(46,111,102,.55); }
+
+  /* ---------- 控件 ---------- */
+  .field{ width:100%; background:#F6FAF8; border:1px solid #E7EFEB; border-radius:11px; padding:10px 12px; font-size:13px; line-height:1.6; outline:none; color:#1B2D2B; transition:border-color .16s ease, background-color .16s ease; }
+  .field::placeholder{ color:#A9B7B3; }
+  .field:focus{ border-color:#8FBFA8; background:#fff; box-shadow:0 0 0 3px rgba(143,191,168,.14); }
+  .chip{ font-size:11px; padding:6px 11px; border-radius:999px; border:1px solid #E7EFEB; background:#fff; color:#5A6D6A; white-space:nowrap; transition:.16s ease; }
+  .chip.on{ background:#2E6F66; border-color:#2E6F66; color:#fff; font-weight:500; }
+  .icon-btn{ width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #E7EFEB; display:flex; align-items:center; justify-content:center; color:#5A6D6A; }
+  .btn-primary{ background:#2E6F66; color:#fff; border-radius:12px; font-size:13.5px; font-weight:500; height:46px; display:flex; align-items:center; justify-content:center; }
+  .btn-primary:active{ background:#22544C; }
+  .btn-soft{ background:#EAF4EF; color:#2E6F66; border-radius:12px; font-size:12.5px; font-weight:500; height:40px; display:flex; align-items:center; justify-content:center; }
+
+  details>summary{list-style:none;cursor:pointer}
+  details>summary::-webkit-details-marker{display:none}
+  ::-webkit-scrollbar{display:none}
+  input,textarea,select{font-family:inherit}
+  .sw{width:40px;height:23px;border-radius:9999px;position:relative;transition:.2s;flex-shrink:0}
+  .sw i{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:9999px;background:#fff;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+  .sw.on{background:#2E6F66}.sw.on i{left:19.5px}
+  .sw.off{background:#DDE3DA}
+  .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .fade-in{ animation:fadeIn .22s ease both; }
+  @keyframes fadeIn{ from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+  .sheet-up{ animation:sheetUp .28s cubic-bezier(.32,.72,.36,1) both; }
+  @keyframes sheetUp{ from{transform:translateY(100%)} to{transform:none} }
+  .typing span{ display:inline-block;width:5px;height:5px;margin-right:3px;border-radius:9999px;background:#8DBEAC;animation:blink 1.2s infinite }
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  @media print{
+    body{ background:#fff; }
+    #tabbar, #toast, #subpage, #sheetHost, #aiHost, #confirmHost{ display:none !important; }
+    .page{ display:block !important; }
+    #page-timeline, #page-add, #page-growth, #page-me{ display:none !important; }
+    .shadow-card, .shadow-soft{ box-shadow:none !important; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+  }
+</style>
+</head>
+<body class="bg-[#EDF3F1] min-h-screen flex justify-center">
+
+<div id="app" class="w-full max-w-[400px] bg-bg min-h-screen relative flex flex-col shadow-soft">
+  <main id="pages" class="flex-1 pb-24">
+    <section id="page-home" class="page"></section>
+    <section id="page-timeline" class="page hidden"></section>
+    <section id="page-add" class="page hidden"></section>
+    <section id="page-growth" class="page hidden"></section>
+    <section id="page-me" class="page hidden"></section>
+  </main>
+
+  <nav id="tabbar" class="fixed inset-x-0 bottom-0 mx-auto w-full max-w-[400px] bg-white/95 backdrop-blur-xl border-t border-line z-30" style="padding-bottom:env(safe-area-inset-bottom)">
+    <div class="flex items-stretch">
+      <button class="tab-btn press" data-tab="home" aria-label="首页">
+        <span class="nav-ico"><svg class="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-9.5z"/></svg></span>
+        <span class="nav-label">首页</span>
+      </button>
+      <button class="tab-btn press relative" data-tab="timeline" aria-label="记录">
+        <span id="navDot" class="hidden absolute top-1 right-[22%] min-w-[16px] h-[16px] px-1 rounded-full bg-[#B96A45] text-white text-[9px] leading-[16px] text-center num">0</span>
+        <span class="nav-ico"><svg class="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3.5h12v17H6z"/><path d="M9 8.5h6M9 12.5h6M9 16.5h3.5"/></svg></span>
+        <span class="nav-label">记录</span>
+      </button>
+      <button class="tab-btn press !gap-0" data-tab="add" aria-label="新增记录">
+        <span class="fab grad-hero text-white -mt-5 mb-1">
+          <svg class="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></svg>
+        </span>
+        <span class="nav-label">记一笔</span>
+      </button>
+      <button class="tab-btn press" data-tab="growth" aria-label="成长">
+        <span class="nav-ico"><svg class="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18.5V11M10 18.5V6M16 18.5v-5M21 18.5H3"/></svg></span>
+        <span class="nav-label">成长</span>
+      </button>
+      <button class="tab-btn press" data-tab="me" aria-label="我的">
+        <span class="nav-ico"><svg class="w-[20px] h-[20px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8.2" r="3.3"/><path d="M5.2 19.8c0-3.5 3.1-5.5 6.8-5.5s6.8 2 6.8 5.5"/></svg></span>
+        <span class="nav-label">我的</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- 二级页面 -->
+<div id="subpage" class="hidden fixed inset-0 z-40">
+  <div class="w-full max-w-[400px] mx-auto h-full bg-bg flex flex-col shadow-soft">
+    <header class="h-12 shrink-0 bg-white/95 backdrop-blur border-b border-line flex items-center px-2">
+      <button onclick="backSub()" class="press w-9 h-9 flex items-center justify-center rounded-full text-t1">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <p id="subTitle" class="flex-1 text-center text-[15px] font-medium text-t1 truncate px-1"></p>
+      <div id="subActions" class="w-9 h-9 flex items-center justify-end"></div>
+    </header>
+    <div id="subBody" class="flex-1 overflow-y-auto"></div>
+  </div>
+</div>
+
+<!-- 通用底部抽屉 -->
+<div id="sheetHost" class="hidden fixed inset-0 z-50">
+  <div class="absolute inset-0 bg-black/30" onclick="closeSheet()"></div>
+  <div class="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[400px] bg-bg rounded-t-2xl max-h-[88vh] flex flex-col sheet-up">
+    <div class="shrink-0 h-12 px-4 bg-white rounded-t-2xl border-b border-line flex items-center justify-between">
+      <p id="sheetTitle" class="text-[15px] font-semibold text-t1 truncate pr-3"></p>
+      <button onclick="closeSheet()" class="press w-7 h-7 rounded-full bg-subbg text-t2 flex items-center justify-center text-[13px] leading-none">✕</button>
+    </div>
+    <div id="sheetBody" class="flex-1 overflow-y-auto"></div>
+    <div id="sheetFoot" class="shrink-0 bg-white border-t border-line" style="padding-bottom:env(safe-area-inset-bottom)"></div>
+  </div>
+</div>
+
+<!-- 确认框 -->
+<div id="confirmHost" class="hidden fixed inset-0 z-[70] flex items-center justify-center px-8">
+  <div class="absolute inset-0 bg-black/35" onclick="closeConfirm()"></div>
+  <div class="relative w-full max-w-[300px] bg-white rounded-2xl overflow-hidden fade-in">
+    <div class="px-5 pt-5 pb-4 text-center">
+      <p id="cfTitle" class="text-[15px] font-semibold text-t1"></p>
+      <p id="cfMsg" class="text-[12px] text-t2 mt-2 leading-relaxed"></p>
+    </div>
+    <div id="cfFoot" class="flex border-t border-line"></div>
+  </div>
+</div>
+
+<!-- AI 助手 -->
+<div id="aiHost" class="hidden fixed inset-0 z-[60]">
+  <div class="absolute inset-0 bg-black/30" onclick="closeAI()"></div>
+  <div class="absolute inset-x-0 bottom-0 mx-auto w-full max-w-[400px] h-[82vh] bg-bg rounded-t-2xl flex flex-col sheet-up">
+    <div class="shrink-0 h-12 px-4 bg-white rounded-t-2xl border-b border-line flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 rounded-lg bg-mist text-brand flex items-center justify-center">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8L12 3z"/></svg>
+        </span>
+        <p class="text-[15px] font-semibold text-t1">AI 助手</p>
+      </div>
+      <div class="flex items-center gap-1">
+        <button onclick="clearChat()" class="press text-[11px] text-t3 px-2 py-1">清空</button>
+        <button onclick="closeAI()" class="press w-7 h-7 rounded-full bg-subbg text-t2 flex items-center justify-center text-[13px]">✕</button>
+      </div>
+    </div>
+    <div class="shrink-0 px-3 pt-2.5 pb-2 flex gap-2 overflow-x-auto bg-white border-b border-line" id="aiChips"></div>
+    <div id="chatList" class="flex-1 overflow-y-auto px-3 py-3 space-y-3"></div>
+    <div class="shrink-0 bg-white border-t border-line p-2.5 flex items-end gap-2" style="padding-bottom:calc(10px + env(safe-area-inset-bottom))">
+      <textarea id="chatInput" rows="1" placeholder="问问 AI，比如：帮我把这周记录写成周报" class="flex-1 max-h-24 bg-bg rounded-lg px-3 py-2.5 text-[13px] outline-none border border-line focus:border-lteal resize-none"></textarea>
+      <button onclick="sendChat()" id="chatSend" class="press w-9 h-9 shrink-0 rounded-lg bg-brand text-white flex items-center justify-center" aria-label="发送">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2.5-6L4 12z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed top-4 inset-x-0 z-[80] flex justify-center pointer-events-none px-6"></div>
+
+<script>
+/* =========================================================
+   数据层：全部数据来自用户输入，仅存本机 localStorage
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const KEY = 'aiintern.v2';
+const TYPES = ['工作','学习','心得','灵感','生活'];
+const TYPE_CLS = {
+  '工作':'bg-mist text-brand', '学习':'bg-cloudb text-blueg', '心得':'bg-palteal text-teal',
+  '灵感':'bg-[#E8F4F6] text-[#2F7F8C]', '生活':'bg-[#EDF1F6] text-[#5A708C]'
+};
+const STATUS_CLS = {
+  '整理中':'bg-cloudb text-blueg', '待确认':'bg-[#E8F4F6] text-[#2F7F8C]',
+  '已完成':'bg-mist text-brand', '失败':'bg-[#F4EFEE] text-[#8C6A64]'
+};
+const ABILITIES = ['信息整理','信息检索','书面表达','沟通协作','数据处理','逻辑分析','法律检索','文本审阅','项目管理','细致耐心'];
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const firstChar = s => [...String(s ?? '').trim()][0] || '?';
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+const pad = n => String(n).padStart(2,'0');
+const iso = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const nowHM = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtDate = v => { if(!v) return ''; const p = String(v).split('-'); return p.length===3 ? `${+p[1]}月${+p[2]}日` : v; };
+const fmtDateFull = v => { if(!v) return ''; const p = String(v).split('-'); return p.length===3 ? `${p[0]}年${+p[1]}月${+p[2]}日` : v; };
+const weekdayName = v => { const d = new Date(v+'T00:00:00'); return isNaN(d) ? '' : '周' + '日一二三四五六'[d.getDay()]; };
+const daysBetween = (a,b) => {
+  const d1 = new Date((a||'')+'T00:00:00'), d2 = new Date((b||'')+'T00:00:00');
+  if(isNaN(d1.getTime()) || isNaN(d2.getTime())) return 0;
+  return Math.max(0, Math.round((d2 - d1)/86400000));
+};
+
+let memStore = null;
+function blankDB(){
+  return {
+    profile:{ avatar:'', name:'', school:'', major:'', degree:'', grad:'', city:'', email:'', phone:'', target:'', bio:'', skills:[] },
+    internships:[], records:[], materials:[], knowledge:[], reports:[], interviews:[], trash:[],
+    settings:{ privacy:'仅自己可见', tone:'平衡（忠于记录）', remind:true, weekly:true, confirmFirst:true },
+    chat:[], created: iso()
+  };
+}
+function loadDB(){
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch(e) { raw = memStore; }
+  let d = null;
+  if(raw){ try { d = JSON.parse(raw); } catch(e) {} }
+  const b = blankDB();
+  if(!d || typeof d !== 'object') return b;
+  const arr = k => Array.isArray(d[k]) ? d[k] : [];
+  const out = {
+    ...b, ...d,
+    profile: { ...b.profile, ...(d.profile || {}) },
+    settings: { ...b.settings, ...(d.settings || {}) },
+    internships: arr('internships'), records: arr('records'), materials: arr('materials'),
+    knowledge: arr('knowledge'), reports: arr('reports'), interviews: arr('interviews'),
+    trash: arr('trash'), chat: arr('chat')
+  };
+  /* 旧数据兼容：过程 → 行动 Action，补上情境 Situation */
+  out.records.forEach(r => {
+    if(r.struct){
+      if(r.struct.situation == null) r.struct.situation = '';
+      if(r.struct.action == null) r.struct.action = r.struct.process || '';
+    }
+    if(r.ai){
+      if(r.ai.situation == null) r.ai.situation = '';
+      if(r.ai.action == null) r.ai.action = r.ai.process || '';
+      if(r.ai.qkey == null) r.ai.qkey = r.ai.question ? 'result' : '';
+      const bad = /^记录中提到「(.+?)」，?请核对是否为真实成果?$/.exec(String(r.ai.result || '').trim());
+      if(bad){ r.ai.suggest = { key:'result', text:bad[1], at:Date.now() }; r.ai.result = ''; }
+    }
+  });
+  out.materials.forEach(m => {
+    if(m.situation == null) m.situation = '';
+    if(m.action == null) m.action = m.process || '';
+    const bad = /^记录中提到「(.+?)」，?请核对是否为真实成果?$/.exec(String(m.result || '').trim());
+    if(bad) m.result = '';
+  });
+  return out;
+}
+let DB = loadDB();
+function saveDB(){
+  const s = JSON.stringify(DB);
+  try { localStorage.setItem(KEY, s); } catch(e) { memStore = s; }
+}
+
+/* 刷新：重绘当前 Tab 与当前子页 */
+function refresh(){
+  saveDB();
+  renderTab(currentTab);
+  if(currentSub) renderSub();
+  renderNavBadge();
+}
+function toast(msg){
+  const box = $('toast');
+  box.innerHTML = `<div class="bg-[#1E302E]/95 text-white text-[12px] px-3.5 py-2 rounded-lg shadow-lg max-w-[320px] text-center fade-in leading-relaxed">${esc(msg)}</div>`;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { box.innerHTML = ''; }, 2300);
+}
+
+/* 确认框 */
+let cfCb = null;
+function ask(title, msg, okText, cb, danger){
+  $('cfTitle').textContent = title;
+  $('cfMsg').textContent = msg;
+  $('cfFoot').innerHTML = `
+    <button onclick="closeConfirm()" class="press flex-1 h-11 text-[13px] text-t2 border-r border-line">取消</button>
+    <button id="cfOk" class="press flex-1 h-11 text-[13px] font-medium ${danger?'text-[#8C6A64]':'text-brand'}">${esc(okText||'确定')}</button>`;
+  cfCb = cb;
+  $('cfOk').onclick = () => { const fn = cfCb; closeConfirm(); if(fn) fn(); };
+  $('confirmHost').classList.remove('hidden');
+}
+function closeConfirm(){ $('confirmHost').classList.add('hidden'); cfCb = null; }
+
+/* =========================================================
+   通用抽屉 / 子页 / Tab
+   ========================================================= */
+function openSheet(title, body, foot){
+  $('sheetTitle').textContent = title;
+  $('sheetBody').innerHTML = body;
+  $('sheetFoot').innerHTML = foot || '';
+  $('sheetHost').classList.remove('hidden');
+}
+function closeSheet(){
+  $('sheetHost').classList.add('hidden');
+  $('sheetBody').innerHTML = '';
+  $('sheetFoot').innerHTML = '';
+}
+let currentTab = 'home';
+let currentSub = null;
+let subStack = [];
+const SUB = {};
+
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  $('page-' + tab).classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const on = b.dataset.tab === tab;
+    b.classList.toggle('text-brand', on);
+    b.classList.toggle('text-t3', !on);
+  });
+  renderTab(tab);
+  window.scrollTo({ top: 0 });
+  document.documentElement.scrollTop = 0;
+}
+function renderTab(tab){
+  if(tab === 'home') renderHome();
+  else if(tab === 'timeline') renderTimeline();
+  else if(tab === 'add') renderAdd();
+  else if(tab === 'growth') renderGrowth();
+  else if(tab === 'me') renderMe();
+}
+function openSub(key, param){
+  const def = SUB[key];
+  if(def && def.onOpen) def.onOpen(param);
+  subStack.push({ key, param });
+  currentSub = key;
+  $('subpage').classList.remove('hidden');
+  renderSub();
+}
+function replaceSub(key, param){
+  subStack[subStack.length-1] = { key, param };
+  currentSub = key;
+  renderSub();
+}
+function backSub(){
+  subStack.pop();
+  if(!subStack.length){ closeSub(); return; }
+  const top = subStack[subStack.length-1];
+  currentSub = top.key;
+  renderSub();
+}
+function closeSub(){ subStack = []; currentSub = null; $('subpage').classList.add('hidden'); }
+function subParam(){ const top = subStack[subStack.length-1]; return top ? top.param : null; }
+function renderSub(){
+  const def = SUB[currentSub];
+  if(!def) return;
+  $('subTitle').textContent = typeof def.title === 'function' ? def.title(subParam()) : def.title;
+  $('subActions').innerHTML = def.actions ? def.actions(subParam()) : '';
+  $('subBody').innerHTML = def.body(subParam());
+  if(def.after) def.after(subParam());
+}
+
+/* =========================================================
+   计算与派生数据
+   ========================================================= */
+const Q = {
+  activeInternship(){ return DB.internships.find(i => i.status === '进行中') || DB.internships[0] || null; },
+  pending(){ return DB.records.filter(r => r.status === '待确认' || r.status === '整理中'); },
+  confirmed(){ return DB.records.filter(r => r.status === '已完成'); },
+  weekRecords(){
+    const now = new Date(); const start = new Date(now); start.setDate(now.getDate() - ((now.getDay()+6)%7));
+    return DB.records.filter(r => new Date(r.createdAt || r.date) >= new Date(iso(start)+'T00:00:00'));
+  },
+  materialsPending(){ return DB.materials.filter(m => m.status === '待确认'); },
+  materialsDone(){ return DB.materials.filter(m => m.status === '已确认'); },
+  abilityStats(){
+    const map = {};
+    DB.materials.filter(m => m.status === '已确认').forEach(m => (m.ability||[]).forEach(a => { map[a] = (map[a]||0)+1; }));
+    return Object.entries(map).sort((a,b) => b[1]-a[1]);
+  },
+  profileScore(){
+    const p = DB.profile;
+    const keys = ['name','school','major','degree','grad','city','email','phone','target','bio'];
+    const filled = keys.filter(k => String(p[k]||'').trim()).length + (p.skills && p.skills.length ? 1 : 0);
+    return Math.round(filled / (keys.length + 1) * 100);
+  },
+  profileFilled(){ return !!String(DB.profile.name||'').trim(); }
+};
+
+/* =========================================================
+   通用 UI 组件
+   ========================================================= */
+function emptyBox(icon, title, desc, btn, onclick){
+  return `<div class="bg-card border border-line rounded-xl shadow-card py-9 px-6 text-center">
+    <div class="w-12 h-12 rounded-full bg-mist text-brand mx-auto flex items-center justify-center mb-3">${icon}</div>
+    <p class="text-[13px] font-medium text-t1">${esc(title)}</p>
+    <p class="text-[11px] text-t3 mt-1.5 leading-relaxed">${desc}</p>
+    ${btn ? `<button onclick="${onclick}" class="press mt-4 h-9 px-4 bg-brand text-white text-[12px] font-medium rounded-md">${esc(btn)}</button>` : ''}
+  </div>`;
+}
+const I = {
+  doc:'<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h4"/></svg>',
+  spark:'<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg>',
+  plus:'<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>',
+  book:'<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M8 7h7"/></svg>',
+  brief:'<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 8h18v11H3z"/><path d="M9 8V5h6v3"/></svg>'
+};
+function statTile(label, value, sub, onclick){
+  const inner = `<p class="text-[19px] font-semibold text-t1 leading-tight num">${value}</p>
+    <p class="text-[10px] text-t3 mt-0.5">${esc(label)}${sub ? ` · ${esc(sub)}` : ''}</p>`;
+  return onclick
+    ? `<button onclick="${onclick}" class="press text-left bg-card border border-line rounded-xl shadow-card px-3 py-2.5">${inner}</button>`
+    : `<div class="bg-card border border-line rounded-xl shadow-card px-3 py-2.5">${inner}</div>`;
+}
+function segCount(list, key){ return list.filter(x => x[key]).length; }
+</script>
+
+<script>
+/* =========================================================
+   首页
+   ========================================================= */
+function renderHome(){
+  const p = DB.profile;
+  const inter = Q.activeInternship();
+  const pending = Q.pending().length;
+  const recent = DB.records.slice(0,3);
+  const score = Q.profileScore();
+  const filled = Q.profileFilled();
+  const hour = new Date().getHours();
+  const greet = hour < 6 ? '夜深了' : hour < 11 ? '早上好' : hour < 14 ? '中午好' : hour < 19 ? '下午好' : '晚上好';
+  const dateStr = `${new Date().getMonth()+1}月${new Date().getDate()}日 · ${weekdayName(iso())}`;
+
+  const profileBlock = filled ? `
+    <button onclick="openSub('profile')" class="press w-full card px-3.5 py-3 flex items-center gap-3 text-left">
+      <span class="w-10 h-10 rounded-[13px] grad-soft text-brand flex items-center justify-center text-[15px] font-semibold shrink-0">${esc(firstChar(p.avatar || p.name))}</span>
+      <span class="min-w-0 flex-1">
+        <span class="block text-[14px] font-medium text-t1 truncate">${esc(p.name)}</span>
+        <span class="block text-[10.5px] text-t3 truncate mt-0.5">${esc([p.school, p.major, p.degree].filter(Boolean).join(' · ') || '还没填写学校与专业')}</span>
+      </span>
+      ${p.target ? `<span class="text-[10px] text-brand bg-mist px-2 py-1 rounded-full shrink-0 max-w-[96px] truncate">${esc(p.target)}</span>` : ''}
+      <svg class="w-4 h-4 text-t3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>` : `
+    <div class="card !border-dashed !border-[#BFDCCB] p-4">
+      <div class="flex items-center gap-2">
+        <p class="text-[13px] font-medium text-t1 flex-1">完善个人信息</p>
+        <span class="text-[10px] text-brand num">${score}%</span>
+      </div>
+      <p class="text-[10.5px] text-t3 mt-1.5 leading-relaxed">没有任何预置数据，姓名、学校、求职方向都由你自己填写。</p>
+      <div class="mt-2.5 h-1 bg-subbg rounded-full overflow-hidden"><div class="h-full bg-brand rounded-full" style="width:${score}%"></div></div>
+      <button onclick="openSub('profile')" class="press mt-3 h-9 px-4 bg-brand text-white text-[12px] rounded-[10px]">开始填写</button>
+    </div>`;
+
+  const internBlock = inter ? (() => {
+    const total = Math.max(1, daysBetween(inter.start, inter.end));
+    const done = Math.min(total, Math.max(0, daysBetween(inter.start, iso())));
+    const pct = Math.round(done / total * 100);
+    const recs = DB.records.filter(r => r.internshipId === inter.id).length;
+    return `<button onclick="openSub('archiveDetail','${inter.id}')" class="press w-full grad-hero rounded-[18px] p-4 text-left text-white shadow-lift">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <p class="text-[9.5px] tracking-[.14em] text-white/70">当前实习</p>
+          <p class="text-[16px] font-semibold mt-1.5 truncate">${esc(inter.company)}${inter.dept ? ' · ' + esc(inter.dept) : ''}</p>
+          <p class="text-[10.5px] text-white/75 mt-1 truncate">${esc(inter.role || '未填写岗位')} · ${esc(inter.start || '')} 至 ${esc(inter.end || '')}</p>
+        </div>
+        <span class="text-[9.5px] bg-white/15 border border-white/20 rounded-full px-2 py-1 whitespace-nowrap">${esc(inter.status)}</span>
+      </div>
+      <div class="mt-4 pt-3 border-t border-white/15">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-[19px] font-semibold num leading-none">${done}</span>
+          <span class="text-[10px] text-white/70">/ ${total} 天</span>
+          <span class="ml-auto text-[10px] text-white/75">${recs} 条记录</span>
+        </div>
+        <div class="mt-2.5 h-1 bg-white/20 rounded-full overflow-hidden"><div class="h-full rounded-full bg-white/85" style="width:${pct}%"></div></div>
+      </div>
+    </button>`;
+  })() : `<button onclick="openSub('archiveForm')" class="press w-full card !border-dashed px-4 py-3.5 flex items-center gap-3 text-left">
+      <span class="w-9 h-9 rounded-[11px] bg-mist text-brand flex items-center justify-center shrink-0">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5.5v13M5.5 12h13"/></svg>
+      </span>
+      <span class="min-w-0 flex-1">
+        <span class="block text-[12.5px] font-medium text-t1">添加实习档案</span>
+        <span class="block text-[10.5px] text-t3 mt-0.5">记录才能按公司、岗位归档</span>
+      </span>
+      <svg class="w-4 h-4 text-t3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </button>`;
+
+  const weekly = weekBars();
+
+  $('page-home').innerHTML = `
+  <header class="px-5 pt-7 pb-1 flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <p class="h1 truncate">${greet}${filled ? '，' + esc(p.name) : ''}</p>
+      <p class="sub">${dateStr} · 记下今天，AI 帮你沉淀</p>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button onclick="openSub('search')" class="press icon-btn" aria-label="搜索">
+        <svg class="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="6.2"/><path d="M20 20l-3.6-3.6"/></svg>
+      </button>
+      <button onclick="openAI()" class="press flex items-center gap-1.5 grad-ai text-teal text-[11.5px] font-medium px-3 py-2 rounded-xl border border-[#D9EAE5]">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/><path d="M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z"/></svg>
+        AI 助手
+      </button>
+    </div>
+  </header>
+
+  <div class="px-5 mt-4">${profileBlock}</div>
+  <div class="px-5 mt-3">${internBlock}</div>
+
+  <div class="px-5 mt-3">
+    <div class="card grid grid-cols-4 divide-x divide-[#F0F5F3] py-1">
+      ${miniStat('记录', DB.records.length, "switchTab('timeline')")}
+      ${miniStat('待整理', pending, "openSub('pending')")}
+      ${miniStat('素材', DB.materials.length, "openSub('resume')")}
+      ${miniStat('沉淀', DB.knowledge.length + Q.confirmed().length, "openSub('knowledge')")}
+    </div>
+  </div>
+
+  <div class="sec"><h2>快捷入口</h2><span class="more">4 个常用动作</span></div>
+  <div class="px-5 grid grid-cols-2 gap-2.5">
+    ${actionCard('实习档案','公司、时间与导师','<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 8.5h16V20H4z"/><path d="M9 8.5V5h6v3.5M4 13h16"/></svg>', "openSub('archive')", true)}
+    ${actionCard('待我确认', pending ? pending + ' 条等你确认' : '暂时没有待办', '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>', "openSub('pending')")}
+    ${actionCard('写周报','用本周记录拼草稿','<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 3.5h9l3.5 3.5V20.5H6z"/><path d="M9 11h6M9 14.5h6M9 18h3.5"/></svg>', "openSub('reports')")}
+    ${actionCard('搜索','记录、素材、知识','<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="6.2"/><path d="M20 20l-3.6-3.6"/></svg>', "openSub('search')")}
+  </div>
+
+  <div class="sec"><h2>本周节奏</h2><button onclick="openSub('pending')" class="press more">本周 ${Q.weekRecords().length} 条</button></div>
+  <div class="px-5">
+    <div class="card px-4 pt-3.5 pb-3">
+      <div class="flex items-end justify-between h-[74px] gap-1.5">
+        ${weekly.bars.map(b => `
+          <button onclick="openDay('${b.date}')" class="press flex-1 flex flex-col items-center justify-end h-full gap-1.5">
+            <div class="w-full max-w-[20px] rounded-full ${b.count ? (b.today ? 'bg-gradient-to-t from-brand to-[#5A93AC]' : 'bg-brand/85') : 'bg-subbg'}" style="height:${b.h}px"></div>
+            <span class="text-[9.5px] ${b.today ? 'text-brand font-medium' : 'text-t3'}">${b.label}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><h2>最近记录</h2><button onclick="switchTab('add')" class="press more text-brand">+ 记一笔</button></div>
+  <div class="px-5">
+    ${recent.length ? `<div class="space-y-2.5">${recent.map(r => recordCard(r)).join('')}</div>` :
+      emptyBox(I.doc, '还没有任何记录', '记下今天做了什么，AI 会帮你整理成结构化内容，再沉淀为简历素材。', '记录第一条', "switchTab('add')")}
+  </div>
+
+  <p class="text-center text-[10px] text-t3 px-8 mt-7 leading-relaxed">所有内容只保存在本机浏览器，不上传服务器<br>可在「我的 → 数据管理」导出或清除</p>`;
+}
+function miniStat(label, value, onclick){
+  return `<button onclick="${onclick}" class="press py-2.5 flex flex-col items-center">
+    <span class="text-[17px] font-semibold text-t1 num leading-none">${value}</span>
+    <span class="text-[10px] text-t3 mt-1.5">${label}</span>
+  </button>`;
+}
+function actionCard(title, desc, icon, onclick, accent){
+  return `<button onclick="${onclick}" class="press text-left rounded-2xl border p-3.5 ${accent ? 'grad-soft border-[#DCEBE4]' : 'bg-white border-line shadow-card'}">
+    <span class="w-8 h-8 rounded-[10px] flex items-center justify-center ${accent ? 'bg-white/80 text-brand' : 'bg-mist text-brand'}">${icon}</span>
+    <span class="block text-[12.5px] font-medium text-t1 mt-2.5">${title}</span>
+    <span class="block text-[10.5px] text-t3 mt-0.5 truncate">${desc}</span>
+  </button>`;
+}
+function weekBars(){
+  const now = new Date();
+  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay()+6)%7));
+  const labels = ['一','二','三','四','五','六','日'];
+  const bars = labels.map((l,i) => {
+    const d = new Date(monday); d.setDate(monday.getDate()+i);
+    const key = iso(d);
+    const count = DB.records.filter(r => (r.date || '') === key).length;
+    return { label: l, count, h: 6, date: key, today: key === iso() };
+  });
+  const max = Math.max(1, ...bars.map(b => b.count));
+  bars.forEach(b => { b.h = 6 + Math.round(b.count / max * 50); });
+  return { bars };
+}
+function recordCard(r){
+  const inter = DB.internships.find(i => i.id === r.internshipId);
+  const text = (r.ai && r.ai.task) ? r.ai.task : (r.text || r.summary || '');
+  return `<div onclick="openRecord('${r.id}')" class="press card p-3.5">
+    <div class="flex items-center gap-2">
+      <span class="text-[9.5px] px-2 py-0.5 rounded-full ${TYPE_CLS[r.type] || 'bg-subbg text-t2'}">${esc(r.type || '工作')}</span>
+      <span class="text-[10px] text-t3 num">${fmtDate(r.date)} ${esc(r.time||'')}</span>
+      <span class="ml-auto text-[9.5px] px-2 py-0.5 rounded-full ${STATUS_CLS[r.status] || 'bg-subbg text-t2'}">${esc(r.status)}</span>
+    </div>
+    <p class="text-[13px] text-t1 mt-2 leading-[1.65] line-clamp-3">${esc(text)}</p>
+    <div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
+      ${(r.tags||[]).slice(0,3).map(t => `<span class="text-[9.5px] text-t3 bg-[#F4F7F5] px-1.5 py-0.5 rounded"># ${esc(t)}</span>`).join('')}
+      ${inter ? `<span class="text-[9.5px] text-t3 ml-auto truncate max-w-[45%]">${esc(inter.company)}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   记录时间轴
+   ========================================================= */
+let tlSearch = '', tlType = '全部', tlStatus = '全部';
+function renderTimeline(){
+  $('page-timeline').innerHTML = `
+  <header class="px-5 pt-7 pb-1">
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <p class="h1">我的记录</p>
+        <p class="sub">共 ${DB.records.length} 条 · 已沉淀 ${Q.confirmed().length} 条</p>
+      </div>
+      <button onclick="openSub('pending')" class="press shrink-0 mt-1 text-[11px] ${Q.pending().length ? 'text-brand bg-mist' : 'text-t3 bg-white border border-line'} px-2.5 py-1.5 rounded-full">
+        待整理 ${Q.pending().length}
+      </button>
+    </div>
+    <div class="relative mt-4">
+      <input id="tlSearchInput" value="${esc(tlSearch)}" oninput="tlSearch=this.value;renderTlList();toggleTlClear()" placeholder="搜索记录内容、标签…" class="field !pl-10 !pr-9 h-11 !bg-white shadow-card">
+      <svg class="w-[17px] h-[17px] text-t3 absolute left-3.5 top-[13px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="6.2"/><path d="M20 20l-3.6-3.6"/></svg>
+      <button id="tlClear" onclick="tlSearch='';renderTimeline()" class="press ${tlSearch ? '' : 'hidden'} absolute right-2.5 top-2.5 w-6 h-6 rounded-full bg-subbg text-t2 flex items-center justify-center" aria-label="清除搜索">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="flex gap-1.5 overflow-x-auto pt-3 pb-0.5">
+      ${['全部', ...TYPES].map(t => `<button onclick="tlType='${t}';renderTimeline()" class="press chip ${tlType===t?'on':''}">${t}</button>`).join('')}
+    </div>
+    <div class="flex items-center gap-3.5 mt-2.5 pb-2 text-[11px]">
+      <span class="text-[10px] text-t3 tracking-wide">状态</span>
+      ${['全部','待确认','已完成'].map(s => `<button onclick="tlStatus='${s}';renderTimeline()" class="press ${tlStatus===s?'text-brand font-medium':'text-t2'}">${s === '全部' ? '全部' : s}</button>`).join('')}
+      ${tlStatus !== '全部' || tlType !== '全部' ? `<button onclick="tlType='全部';tlStatus='全部';renderTimeline()" class="press ml-auto text-[10px] text-t3">重置筛选</button>` : ''}
+    </div>
+  </header>
+  <div id="tlList" class="px-5 pb-2"></div>`;
+  renderTlList();
+}
+function toggleTlClear(){
+  const b = $('tlClear');
+  if(b) b.classList.toggle('hidden', !tlSearch);
+}
+function renderTlList(){
+  const box = $('tlList');
+  if(!box) return;
+  let list = DB.records.slice().sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+  if(tlType !== '全部') list = list.filter(r => r.type === tlType);
+  if(tlStatus !== '全部') list = list.filter(r => tlStatus === '待确认' ? (r.status === '待确认' || r.status === '整理中') : r.status === tlStatus);
+  const kw = tlSearch.trim().toLowerCase();
+  if(kw) list = list.filter(r => JSON.stringify(r).toLowerCase().includes(kw));
+  if(!list.length){
+    box.innerHTML = `<div class="mt-5">${emptyBox(I.doc, DB.records.length ? '没有符合条件的记录' : '还没有任何记录', DB.records.length ? '换个关键词或筛选条件试试。' : '今天做的第一件小事，也值得记下来。', DB.records.length ? '' : '记一笔', "switchTab('add')")}</div>`;
+    return;
+  }
+  const groups = {};
+  list.forEach(r => { (groups[r.date] ||= []).push(r); });
+  box.innerHTML = Object.entries(groups).map(([date, rs], gi) => `
+    <div class="${gi ? 'mt-5' : 'mt-2'}">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-[12px] font-medium text-t1 num">${fmtDate(date)}</span>
+        <span class="text-[10px] text-t3">${weekdayName(date)}</span>
+        <span class="text-[10px] text-t3">${rs.length} 条</span>
+        <div class="flex-1 h-px bg-line"></div>
+      </div>
+      <div class="space-y-2.5">${rs.map(recordCard).join('')}</div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   新增记录
+   ========================================================= */
+const STAR_FIELDS = [
+  ['situation','S','情境','可选','背景与限制，不是任务','客户临时追加商标异议，要求 3 天内答复',false],
+  ['task','T','任务','必填','分给你的目标，动词开头','整理 30 页证据并按时间排序',true],
+  ['action','A','行动','必填','你本人做的动作，不写团队','逐条核对编号，标出 8 处矛盾并回问客户',true],
+  ['result','R','结果','可选','可验证的产出，没有就留空','清单 32 页，错漏 0 处，客户当天确认',false]
+];
+function starCount(){
+  const s = draft.struct || {};
+  return STAR_FIELDS.filter(([k]) => String(s[k]||'').trim()).length;
+}
+function updateStarBar(){
+  const s = draft.struct || {};
+  STAR_FIELDS.forEach(([k]) => {
+    const seg = $('star_' + k);
+    if(!seg) return;
+    const on = !!String(s[k]||'').trim();
+    const m = PART_META[k];
+    seg.style.background = on ? m.fg : m.bg;
+    seg.style.color = on ? '#fff' : m.fg;
+    const row = $('row_' + k);
+    if(row) row.style.borderColor = on ? m.fg : '#DDE6E2';
+  });
+  const txt = $('starProgressText');
+  if(txt) txt.textContent = starCount() ? starCount() + '/4 已填写' : 'S 可跳过';
+}
+function focusStar(k){
+  const el = $('s_' + k);
+  if(el) el.focus({ preventScroll:false });
+}
+let draft = { mode:'quick', type:'工作', text:'', struct:{situation:'',task:'',action:'',result:''}, tags:[], files:[], internshipId:'', ov:{} };
+function renderAdd(){
+  if(!draft.internshipId && DB.internships.length) draft.internshipId = (Q.activeInternship()||{}).id || '';
+  const quick = draft.mode === 'quick';
+  $('page-add').innerHTML = `
+  <header class="px-5 pt-7 pb-3">
+    <p class="h1">记一笔</p>
+    <p class="sub">${quick ? '写下背景、目标、动作、结果，AI 自动分出 STAR' : '按四栏填，每栏只写一件事'}</p>
+  </header>
+
+  <div class="px-5 space-y-3">
+    <div class="bg-[#EDF3F1] rounded-[13px] p-1 flex">
+      ${[['quick','快速记录'],['struct','STAR 记录']].map(([k,v]) => `<button onclick="draft.mode='${k}';renderAdd()" class="press flex-1 h-8 rounded-[10px] text-[12px] transition ${draft.mode===k?'bg-white text-t1 font-medium shadow-soft':'text-t2'}">${v}</button>`).join('')}
+    </div>
+
+    <div class="card p-3.5 space-y-3.5">
+      <div>
+        <p class="text-[10.5px] text-t3 mb-1.5 tracking-wide">类型</p>
+        <div class="flex gap-1.5 flex-wrap">
+          ${TYPES.map(t => `<button onclick="setDraftType('${t}')" class="press chip ${draft.type===t?'on':''}">${t}</button>`).join('')}
+        </div>
+      </div>
+      <div>
+        <p class="text-[10.5px] text-t3 mb-1.5 tracking-wide">所属实习</p>
+        ${DB.internships.length ? `<select id="recIntern" onchange="draft.internshipId=this.value" class="field h-10 !py-0 !text-[12.5px]">
+          <option value="">不关联实习</option>
+          ${DB.internships.map(i => `<option value="${i.id}" ${draft.internshipId===i.id?'selected':''}>${esc(i.company)}${i.role?' · '+esc(i.role):''}</option>`).join('')}
+        </select>` : `<button onclick="openSub('archiveForm')" class="press text-[11.5px] text-brand">+ 先创建实习档案</button>`}
+      </div>
+    </div>
+
+    ${quick ? `
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+      <span class="text-[10px] text-t3 shrink-0 mr-0.5">模板</span>
+      ${[['会议','会议纪要'],['对接','客户对接'],['学习','学习笔记'],['事务','日常事务']].map(([k,v]) => `<button onclick="useTemplate('${k}')" class="press chip !py-1.5 !text-[10.5px]">${v}</button>`).join('')}
+    </div>
+    <div class="card p-3.5">
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-[10.5px] text-t3 tracking-wide">记录内容</p>
+        <div class="flex items-center gap-2">
+          <button onclick="fillSample()" class="press text-[10px] text-brand">看示例</button>
+          <span id="charCount" class="text-[10px] text-t3 num">${draft.text.length} 字</span>
+        </div>
+      </div>
+      <textarea id="recText" rows="6" oninput="draft.text=this.value;updateCount()" placeholder="把背景、目标、你做的动作、可验证产出分开写，用逗号或句号断开，AI 会逐句分区。&#10;例：客户临时要一份证据清单，导师让我把半年聊天记录整理出来。我按时间排序、标注关键证据，最后交付了 12 页清单。" class="field !bg-[#FAFCFB] !text-[13px] !leading-[1.85] resize-none">${esc(draft.text)}</textarea>
+      <div class="flex items-center gap-1 mt-2.5">
+        <span class="text-[9.5px] text-t3 mr-0.5">已识别</span>
+        ${PART_ORDER.map(k => `<span id="pc_${k}" class="text-[9px] px-1.5 py-0.5 rounded bg-[#F1F4F2] text-[#8A9793]">${PART_META[k].L}</span>`).join('')}
+        <span class="ml-auto text-[9px] text-t3">点下方字母可改归属</span>
+      </div>
+    </div>
+    <div id="splitPreview" class="card p-3.5"></div>` : `
+    <div class="card p-4">
+      <div class="flex items-center justify-between">
+        <p class="text-[12px] font-medium text-t1">STAR 四步</p>
+        <span id="starProgressText" class="text-[10px] text-t3 num">${starCount() ? starCount() + '/4 已填写' : 'S 可跳过'}</span>
+      </div>
+      <div class="flex gap-1.5 mt-2.5">
+        ${STAR_FIELDS.map(([k, l]) => {
+          const on = String(draft.struct[k]||'').trim();
+          const m = PART_META[k];
+          return `<button onclick="focusStar('${k}')" id="star_${k}" class="press flex-1 h-6 rounded-[7px] text-[10px] font-medium" style="background:${on ? m.fg : m.bg};color:${on ? '#fff' : m.fg}">${l}</button>`;
+        }).join('')}
+      </div>
+      <details class="mt-2">
+        <summary class="text-[10px] text-brand flex items-center gap-1">四栏界定 <span class="text-t3">S 背景 · T 目标 · A 我的动作 · R 可验证产出</span></summary>
+        <div class="mt-1.5 bg-bg rounded-[9px] px-2.5 py-2 space-y-1 text-[10px] text-t2 leading-relaxed">
+          <p><b style="color:${PART_META.situation.fg}">S 情境</b>：谁提的需求、为什么做、有什么限制</p>
+          <p><b style="color:${PART_META.task.fg}">T 任务</b>：分给你的目标，一句话、动词开头</p>
+          <p><b style="color:${PART_META.action.fg}">A 行动</b>：你本人做的具体动作和方法，不写「我们」</p>
+          <p><b style="color:${PART_META.result.fg}">R 结果</b>：可验证的产出或变化；没有就留空，不写猜测</p>
+        </div>
+      </details>
+      <div class="space-y-3.5 mt-3.5">
+        ${STAR_FIELDS.map(([key, letter, label, req, hint, ph, must]) => {
+          const m = PART_META[key];
+          const on = String(draft.struct[key]||'').trim();
+          return `
+        <div id="row_${key}" class="flex gap-2 pl-2 border-l-[3px]" style="border-color:${on ? m.fg : '#DDE6E2'}">
+          <span class="shrink-0 w-5 h-5 rounded-[6px] text-[10px] font-semibold flex items-center justify-center mt-[3px]" style="background:${on ? m.bg : '#F1F4F2'};color:${on ? m.fg : '#9AA7A3'}">${letter}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-baseline gap-1.5 mb-1">
+              <span class="text-[11px] font-medium" style="color:${m.fg}">${label}</span>
+              <span class="text-[9px] ${must ? 'text-brand/70' : 'text-t3'}">${req}</span>
+              <span class="text-[9.5px] text-t3 truncate">${hint}</span>
+            </div>
+            <input id="s_${key}" value="${esc(draft.struct[key]||'')}" oninput="draft.struct.${key}=this.value;updateStarBar()" placeholder="${ph}" class="field h-10">
+          </div>
+        </div>`;
+        }).join('')}
+      </div>
+      <p class="text-[10px] text-t3 mt-3.5 leading-relaxed">T 和 A 必填，S、R 可先留空；AI 只整理你写的内容，缺的部分会追问。</p>
+    </div>`}
+
+    <div class="card p-3.5">
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-[10.5px] text-t3 tracking-wide">标签</p>
+        <span class="text-[10px] text-t3">最多 8 个</span>
+      </div>
+      ${draft.tags.length ? `<div class="flex gap-1.5 flex-wrap mb-2">${draft.tags.map(t => `<span class="text-[10.5px] bg-mist text-brand px-2 py-1 rounded-full flex items-center gap-1"># ${esc(t)}<button onclick="removeTag('${esc(t)}')" class="text-brand/50 text-[11px] leading-none" aria-label="移除标签">✕</button></span>`).join('')}</div>` : ''}
+      <div class="flex gap-2">
+        <input id="tagInput" placeholder="输入标签后回车" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag()}" class="field h-9 flex-1 !text-[12px]">
+        <button onclick="addTag()" class="press h-9 px-3.5 bg-mist text-brand text-[11px] rounded-[10px]">添加</button>
+      </div>
+    </div>
+
+    <div class="card p-3.5">
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-[10.5px] text-t3 tracking-wide">附件</p>
+        <span class="text-[10px] text-t3">${draft.files.length}/6</span>
+      </div>
+      ${draft.files.length ? `<div class="space-y-1.5 mb-2">${draft.files.map((f,i) => `<div class="flex items-center gap-2 bg-[#F7FAF9] rounded-[9px] px-2.5 py-2">
+        <svg class="w-3.5 h-3.5 text-t3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12l6-6a3 3 0 0 1 4 4l-7 7a4 4 0 0 1-6-6l6-6"/></svg>
+        <span class="text-[11px] text-t2 truncate flex-1">${esc(f.name)}</span>
+        <button onclick="draft.files.splice(${i},1);renderAdd()" class="text-[12px] text-t3 leading-none px-1" aria-label="移除附件">✕</button>
+      </div>`).join('')}</div>` : ''}
+      <div class="flex gap-2">
+        <button onclick="$('pickImg').click()" class="press flex-1 h-9 bg-bg border border-line rounded-[10px] text-[11px] text-t2">+ 图片</button>
+        <button onclick="$('pickFile').click()" class="press flex-1 h-9 bg-bg border border-line rounded-[10px] text-[11px] text-t2">+ 文件</button>
+      </div>
+      <input type="file" id="pickImg" accept="image/*" multiple class="hidden" onchange="addFiles(this)">
+      <input type="file" id="pickFile" multiple class="hidden" onchange="addFiles(this)">
+      <p class="text-[10px] text-t3 mt-2 leading-relaxed">只记录文件名与大小，文件内容保存在本机。</p>
+    </div>
+
+    <button onclick="submitRecord()" class="press w-full btn-primary">保存记录</button>
+    <p class="text-center text-[10px] text-t3 pb-2 leading-relaxed">保存后 AI 自动整理，结果需要你确认才会沉淀</p>
+  </div>`;
+  if(quick) renderSplitPreview();
+}
+function setDraftType(t){ draft.type = t; renderAdd(); }
+/* ---- 写的时候就能看见四栏怎么分 ---- */
+function updateCount(){
+  const c = $('charCount');
+  if(c) c.textContent = draft.text.length + ' 字';
+  renderSplitPreview();
+}
+function renderSplitPreview(){
+  const box = $('splitPreview');
+  if(!box) return;
+  const text = (draft.text || '').trim();
+  const list = text ? classifyClauses(text, draft.ov) : [];
+  const filled = new Set(list.map(x => x.part));
+  PART_ORDER.forEach(k => {
+    const el = $('pc_' + k);
+    if(!el) return;
+    const on = filled.has(k);
+    el.style.background = on ? PART_META[k].bg : '#F1F4F2';
+    el.style.color = on ? PART_META[k].fg : '#8A9793';
+  });
+  if(!text){
+    box.innerHTML = `
+      <div class="flex items-center justify-between mb-1.5">
+        <p class="text-[10.5px] text-t3 tracking-wide">STAR 分区预览</p>
+        <span class="text-[10px] text-t3">边写边分</span>
+      </div>
+      <p class="text-[11px] text-t3 leading-relaxed">一句话一件事：背景（谁提的、为什么）· 目标（要达成什么）· 行动（你本人做了什么）· 结果（可验证的产出）。写完这里会逐句显示归属。</p>
+      <button onclick="fillSample()" class="press mt-2.5 h-7 px-2.5 bg-mist text-brand text-[10.5px] rounded-md">填一段示例看看</button>`;
+    return;
+  }
+  const n = PART_ORDER.filter(k => filled.has(k)).length;
+  const rows = list.map((x, i) => {
+    const m = PART_META[x.part];
+    const tag = x.low ? '承接上文' : (x.cues.length && !x.locked ? x.cues.slice(0,2).join('·') : '');
+    return `<button onclick="cyclePart(${i})" class="press w-full flex items-start gap-2 text-left py-[3px] rounded-[6px] active:bg-[#F3F7F5]">
+      <span class="shrink-0 w-5 h-5 rounded-[6px] text-[9.5px] font-medium flex items-center justify-center mt-[1px]" style="background:${m.bg};color:${m.fg}">${m.L}</span>
+      <span class="flex-1 min-w-0 text-[11.5px] leading-[1.7] ${x.low ? 'text-t3' : 'text-t2'}">${esc(x.text)}</span>
+      <span class="shrink-0 text-[8.5px] text-t3 mt-[3px] max-w-[64px] truncate">${esc(tag)}</span>
+    </button>`;
+  }).join('');
+  box.innerHTML = `
+    <div class="flex items-center justify-between mb-1.5">
+      <p class="text-[10.5px] text-t3 tracking-wide">STAR 分区预览</p>
+      <span class="text-[10px] num ${n === 4 ? 'text-brand' : 'text-t3'}">${n}/4 已识别</span>
+    </div>
+    <div class="space-y-0.5">${rows}</div>
+    ${list.length === 1 && text.length > 30 ? `<p class="text-[9.5px] text-[#8C6A46] mt-2 leading-relaxed">只识别到 1 句：建议用逗号或句号把「背景 / 目标 / 动作 / 结果」分开，分区会更准。</p>` : ''}
+    ${PART_ORDER.filter(k => !filled.has(k)).length ? `<p class="text-[9.5px] text-t3 mt-2 leading-relaxed">未识别：${PART_ORDER.filter(k => !filled.has(k)).map(k => PART_META[k].L + ' ' + PART_META[k].name).join('、')}，可补充，也可保存后让 AI 追问。</p>` : `<p class="text-[9.5px] text-brand mt-2 leading-relaxed">四栏齐全，保存后可直接确认沉淀。</p>`}
+    ${Object.keys(draft.ov).length ? `<button onclick="resetSplit()" class="press text-[10px] text-brand mt-2">恢复自动分区</button>` : ''}`;
+}
+function cyclePart(i){
+  const list = classifyClauses((draft.text || '').trim(), draft.ov);
+  const it = list[i];
+  if(!it) return;
+  const next = PART_ORDER[(PART_ORDER.indexOf(it.part) + 1) % PART_ORDER.length];
+  draft.ov = { ...draft.ov, [it.key]: next };
+  renderSplitPreview();
+  toast('已改为 ' + PART_META[next].L + ' ' + PART_META[next].name);
+}
+function resetSplit(){ draft.ov = {}; renderSplitPreview(); }
+function fillSample(){
+  draft.text = '客户临时要一份证据清单，导师让我把近半年的聊天记录整理出来。我先按时间排序，再标注关键证据，最后交付了一份 12 页清单，客户当天确认了。';
+  draft.ov = {};
+  renderAdd();
+  toast('已填入示例，可直接改或保存');
+}
+function addTag(){
+  const inp = $('tagInput'); const v = (inp.value||'').trim().replace(/^#/,'').replace(/["'<>`\\]/g,'').slice(0,12);
+  if(!v) return;
+  if(draft.tags.includes(v)){ toast('标签已存在'); return; }
+  if(draft.tags.length >= 8){ toast('最多 8 个标签'); return; }
+  draft.tags.push(v); inp.value=''; renderAdd(); $('tagInput') && $('tagInput').focus();
+}
+function removeTag(t){ draft.tags = draft.tags.filter(x => x !== t); renderAdd(); }
+function addFiles(input){
+  [...input.files].forEach(f => { if(draft.files.length < 6) draft.files.push({ name:f.name, size:f.size }); });
+  input.value = '';
+  renderAdd();
+}
+
+function submitRecord(){
+  let text = '', summary = '', ov = null;
+  if(draft.mode === 'quick'){
+    text = (draft.text || '').trim();
+    if(!text){ toast('请先输入记录内容'); return; }
+    summary = text;
+    ov = { ...draft.ov };
+  } else {
+    const s = draft.struct;
+    if(!s.task.trim()){ toast('请填写 T 任务：要解决什么问题'); focusStar('task'); return; }
+    if(!s.action.trim()){ toast('请填写 A 行动：你具体做了什么'); focusStar('action'); return; }
+    const parts = [];
+    if(s.situation.trim()) parts.push('情境：' + s.situation.trim());
+    parts.push('任务：' + s.task.trim());
+    parts.push('行动：' + s.action.trim());
+    if(s.result.trim()) parts.push('结果：' + s.result.trim());
+    text = parts.join('；');
+    summary = s.task.trim();
+  }
+  const r = {
+    id: uid(), date: iso(), createdAt: new Date().toISOString(), time: nowHM(),
+    type: draft.type, text, summary,
+    struct: draft.mode === 'struct' ? { ...draft.struct } : null,
+    tags: [...draft.tags], files: [...draft.files],
+    internshipId: draft.internshipId || '', status: '整理中', ai: null
+  };
+  DB.records.unshift(r);
+  draft = { mode:'quick', type:'工作', text:'', struct:{situation:'',task:'',action:'',result:''}, tags:[], files:[], internshipId:draft.internshipId, ov:{} };
+  saveDB();
+  switchTab('timeline');
+  toast('已保存原始记录，AI 开始整理…');
+  setTimeout(() => {
+    if(!DB.records.find(x => x.id === r.id)) return;
+    r.ai = makeDraft(r.text, r.struct, { ov });
+    r.status = '待确认';
+    refresh();
+    toast('AI 整理完成，请确认后沉淀');
+  }, 1600);
+}
+
+/* =========================================================
+   STAR 分区引擎
+   做法：先按标点分成小句，再按「线索词 + 结构特征」给每个小句
+   在 S/T/A/R 四栏上打分，取最高分归位；分不出的承接上文。
+   全部规则透明、可被用户逐句改判，不凭顺序硬切、不编造成果。
+   ========================================================= */
+const PART_META = {
+  situation:{ L:'S', name:'情境', hint:'背景与限制', fg:'#4E86A8', bg:'#ECF4F9' },
+  task:     { L:'T', name:'任务', hint:'分给你的目标', fg:'#2E6F66', bg:'#E9F2EF' },
+  action:   { L:'A', name:'行动', hint:'你本人做的', fg:'#3E8E86', bg:'#E3F1EE' },
+  result:   { L:'R', name:'结果', hint:'可验证的产出', fg:'#96703F', bg:'#FAF1E6' }
+};
+const PART_ORDER = ['situation','task','action','result'];
+const NUM_RE = /(\d+(?:[.,]\d+)?)\s*(个|条|份|页|次|篇|家|人|件|处|项|版|套|张|小时|天|周|月|年|%|％|倍)/;
+const STAR_CUES = {
+  situation:[
+    ['因为',3],['由于',3],['为了',2.5],['背景',4],['当时',3],['原本',2],['临时',3],['紧急',3],
+    ['客户',1.5],['甲方',2],['导师',1.5],['领导',1.5],['部门',1.5],['项目',1],['公司',1],
+    ['需求',2],['接手',3],['面临',3],['遇到',2],['刚入职',2],['期间',2],['规定',1],['要求是',2]
+  ],
+  task:[
+    ['需要',3],['必须',3],['负责',3.5],['目标',4],['任务',4],['要求',2],['安排',3],['交给',3],
+    ['让我',3],['叫我',3],['要把',3],['截止',3],['之前交',3],['输出',2],['约定',2]
+  ],
+  action:[
+    ['我',2.5],['自己',2],['独立',2],['先',2],['然后',2],['接着',2],['最后',1],['再',1],
+    ['通过',2],['按',1.5],['逐一',2],['逐个',2],['逐条',2],['整理',3],['梳理',3],['分类',3],
+    ['核对',3],['检索',3],['查询',3],['撰写',3],['起草',3],['制作',2],['搭建',2],['沟通',2],
+    ['对接',3],['协调',3],['跟进',2],['录入',3],['校对',3],['汇总',3],['拆解',2],['标注',3],
+    ['复盘',2],['请教',2],['统计',3],['比对',3],['归因',2],['转成',2],['参加',2.5],['参与',2.5],
+    ['回问',2.5],['询问',2],['发现',2],['做成',2.5],['整理成',2],['重写',2]
+  ],
+  result:[
+    ['最终',3],['结果',3.5],['产出',4],['完成',2],['提交',3],['交付',3.5],['通过',2],['采纳',4],
+    ['上线',3],['节省',4],['提升',4],['减少',3],['避免',3],['覆盖',3],['共',2.5],['被',1.5],['得到',2],
+    ['获得',3],['落地',3],['准确率',4],['效率',3],['确认',3.5],['认可',4],['满意',3.5],['零差错',4],['通过率',4]
+  ]
+};
+/* 切句：先按句末标点，再按逗号切到「一件事」的粒度 */
+function splitClauses(text){
+  const out = [];
+  String(text || '').split(/[。；;！!？?\n]+/).forEach(seg => {
+    String(seg).split(/[，,]+/).forEach(p => {
+      const x = p.trim().replace(/^[、\s]+|[、\s]+$/g, '');
+      if(x) out.push(x);
+    });
+  });
+  return out.slice(0, 24);
+}
+/* 单个小句在四栏上的得分 */
+function scoreClause(c){
+  const sc = { situation:0, task:0, action:0, result:0 };
+  const cues = { situation:[], task:[], action:[], result:[] };
+  PART_ORDER.forEach(k => STAR_CUES[k].forEach(([w, wt]) => {
+    if(c.indexOf(w) >= 0){ sc[k] += wt; cues[k].push(w); }
+  }));
+  if(/^(今天|昨天|前天|上周|这周|本周|最近|上午|下午|晚上|当时|一开始|刚入职)/.test(c)) sc.situation += 2;
+  if(/(让|叫|要求|安排|指派|交给|委托|吩咐)\s*(我|我们)?/.test(c)) sc.task += 2.5;
+  if(/^(导师|领导|老板|老师|主管|同事|客户|甲方|对方)/.test(c) && !/^我/.test(c)){ sc.action -= 3.5; sc.situation += 1; }
+  if(/^我/.test(c)) sc.action += 2;
+  if(/了/.test(c)) sc.action += 1.5;
+  if(/(把|将).{1,14}(整理|做成|拆|分|改|汇总|归档|录入|转成)/.test(c)) sc.action += 2;
+  if(NUM_RE.test(c)){ sc.result += 3.2; cues.result.push('含数量'); }
+  if(/(共|一共|总计|累计)\s*[\d一二三四五六七八九十]/.test(c)) sc.result += 1.5;
+  if(/(最终|最后)[^，,]{0,6}(交付|提交|完成|产出|形成|实现)/.test(c)) sc.result += 3;
+  if(!sc.action && !sc.result && sc.situation) sc.situation += 1;
+  return { sc, cues };
+}
+/* 分区主函数；ov 为人工改判表 { '序号|原句': 'part' } */
+function classifyClauses(text, ov){
+  const out = [];
+  let prev = '';
+  splitClauses(text).forEach((c, i) => {
+    const { sc, cues } = scoreClause(c);
+    let part = '', best = 0;
+    PART_ORDER.forEach(k => { if(sc[k] > best){ best = sc[k]; part = k; } });
+    let low = false;
+    if(!part || best < 1.8){ part = prev || 'action'; low = true; }
+    const key = i + '|' + c;
+    let locked = false;
+    if(ov && ov[key]){ part = ov[key]; low = false; locked = true; }
+    out.push({ text:c, part, score:Math.round(best * 10) / 10, cues:(cues[part] || []).slice(0,3), low, locked, key });
+    prev = part;
+  });
+  return out;
+}
+function structFromClauses(list){
+  const g = k => (list || []).filter(x => x.part === k).map(x => x.text).join('，').replace(/^[，,、]+|[，,、]+$/g, '');
+  return { situation:g('situation'), task:g('task'), action:g('action'), result:g('result') };
+}
+/* 没写目标时，用第一条行动推断一个 T（明确标注为推断，可改） */
+function deriveTask(action){
+  const first = String(action || '').split(/[，,；;。]/)[0] || '';
+  let t = first
+    .replace(/^(今天|昨天|前天|上周|这周|本周|最近|上午|下午|晚上|我|自己|先|然后|接着|最后|再)+/g, '')
+    .replace(/^[，,、：:\s]+/, '')
+    .replace(/了/g, '')
+    .replace(/(一下|一遍|一轮)$/, '')
+    .trim();
+  if(t.length > 26) t = t.slice(0, 26);
+  return t;
+}
+function ovOf(r){
+  const s = r && r.ai && r.ai.split;
+  if(!s || s.text !== r.text) return null;
+  const ov = {};
+  s.list.forEach((x, i) => { ov[i + '|' + x.text] = x.part; });
+  return ov;
+}
+function makeDraft(text, struct, opts){
+  const t = (text || '').trim();
+  const s = struct || {};
+  const ov = (opts && opts.ov) || null;
+  const manual = {
+    situation:(s.situation || '').trim(), task:(s.task || '').trim(),
+    action:(s.action || '').trim(), result:(s.result || '').trim()
+  };
+  const hasManual = !!(manual.task || manual.action);
+  const list = hasManual ? [] : classifyClauses(t, ov);
+  const auto = structFromClauses(list);
+  const m = {
+    situation: manual.situation || auto.situation,
+    task: manual.task || auto.task,
+    action: manual.action || auto.action,
+    result: manual.result || auto.result
+  };
+  /* 缺 T：用行动推断，并在界面上标明「推断」 */
+  let derivedTask = false;
+  if(!m.task && m.action){ m.task = deriveTask(m.action); derivedTask = !!m.task; }
+  if(!m.task){ m.task = (splitClauses(t)[0] || t).slice(0, 30) || '未命名记录'; derivedTask = true; }
+  /* R 只放原文里说过的结果；原文的数字若没被归进 R，只作为候选 */
+  let suggest = null;
+  if(!m.result){
+    const hit = t.match(NUM_RE);
+    if(hit) suggest = { key:'result', text:hit[0].replace(/\s+/g, ' '), at:Date.now() };
+  }
+  const ability = guessAbility(t);
+  let question = '', qkey = '';
+  if(!m.action){ question = '你具体做了什么？用什么方法、和谁配合？'; qkey = 'action'; }
+  else if(!m.result){ question = '这次可验证的产出是什么？写数量、页数、通过率等；确实没有就写「无具体产出」。'; qkey = 'result'; }
+  else if(!m.situation){ question = '这件事的背景是什么？谁提的需求、为什么要做？'; qkey = 'situation'; }
+  else if(!ability.length){ question = '这段经历里，你觉得最能体现的能力是什么？'; qkey = 'ability'; }
+  else if(m.action.length < 12){ question = '行动再具体一点：你用了什么方法、和谁配合完成的？'; qkey = 'action'; }
+  return {
+    ...m, ability, question, qkey, suggest, answer:'',
+    split: list.length ? { text:t, list } : null,
+    auto: !hasManual, derivedTask, at: Date.now()
+  };
+}
+function guessAbility(text){
+  const map = [['整理','信息整理'],['归档','信息整理'],['检索','信息检索'],['查询','信息检索'],['报告','书面表达'],['周报','书面表达'],['撰写','书面表达'],
+    ['会议','沟通协作'],['对接','沟通协作'],['沟通','沟通协作'],['协调','沟通协作'],['表格','数据处理'],['数据','数据处理'],['分析','逻辑分析'],['法规','法律检索'],
+    ['合同','文本审阅'],['审阅','文本审阅'],['校对','文本审阅'],['项目','项目管理'],['细致','细致耐心'],['核对','细致耐心'],['复盘','逻辑分析']];
+  return [...new Set(map.filter(([k]) => text.includes(k)).map(([,v]) => v))].slice(0,3);
+}
+function processAI(id){
+  const r = DB.records.find(x => x.id === id);
+  if(!r) return;
+  r.status = '整理中'; saveDB();
+  toast('AI 正在整理…');
+  setTimeout(() => {
+    if(!DB.records.find(x => x.id === id)) return;
+    r.ai = makeDraft(r.text, r.struct, { ov: ovOf(r) });
+    r.status = '待确认';
+    refresh();
+    toast('整理完成，等待你确认');
+  }, 1200);
+}
+</script>
+
+<script>
+/* =========================================================
+   记录详情：编辑原始记录 + AI 结果 + 确认沉淀 / 删除
+   ========================================================= */
+function rawBlock(r){
+  const inner = `<textarea id="recEditText" rows="5" class="w-full bg-bg rounded-md px-3 py-2 text-[12px] leading-relaxed outline-none border border-line focus:border-lteal resize-none">${esc(r.text)}</textarea>
+      ${(r.tags||[]).length ? `<div class="flex gap-1.5 flex-wrap mt-2">${r.tags.map(t => `<span class="text-[10px] text-t3 bg-subbg px-1.5 py-0.5 rounded"># ${esc(t)}</span>`).join('')}</div>` : ''}
+      ${(r.files||[]).length ? `<div class="mt-2 space-y-1">${r.files.map((f,i) => `<button onclick="openFileInfo('${r.id}',${i})" class="press flex items-center gap-1.5 text-[10px] text-t3 w-full text-left"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12l6-6a3 3 0 0 1 4 4l-7 7a4 4 0 0 1-6-6l6-6"/></svg><span class="truncate">${esc(f.name)}</span></button>`).join('')}</div>` : ''}`;
+  if(r.struct){
+    return `<details class="bg-card border border-line rounded-xl shadow-card">
+      <summary class="flex items-center gap-2 px-3.5 py-2.5">
+        <span class="text-[11px] text-t2">原始记录</span>
+        <span class="text-[10px] text-t3">已存为 STAR，可展开修改</span>
+        <svg class="w-3.5 h-3.5 text-t3 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="px-3.5 pb-3.5">${inner}</div>
+    </details>`;
+  }
+  return `<div class="bg-card border border-line rounded-xl shadow-card p-3.5">
+    <div class="flex items-center justify-between mb-1.5">
+      <p class="text-[11px] font-medium text-t1">原始记录</p>
+      <div class="flex items-center gap-2">
+        <button onclick="copyText($('recEditText').value)" class="press text-[10px] text-teal">复制</button>
+        <span class="text-[10px] text-t3">可编辑，AI 不覆盖</span>
+      </div>
+    </div>${inner}</div>`;
+}
+function starRowS(part, id, val, ph, must){
+  const m = PART_META[part];
+  const empty = !String(val || '').trim();
+  return `<div class="flex gap-2 pl-2 border-l-[3px]" style="border-color:${empty ? '#DDE6E2' : m.fg}">
+    <span class="shrink-0 w-5 h-5 rounded-[6px] text-[10px] font-semibold flex items-center justify-center mt-[2px]" style="background:${empty ? '#F1F4F2' : m.bg};color:${empty ? '#9AA7A3' : m.fg}">${m.L}</span>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-baseline gap-1.5 mb-1">
+        <span class="text-[10.5px] font-medium" style="color:${empty ? '#6E7C78' : m.fg}">${m.name}</span>
+        <span class="text-[9px] text-t3">${m.hint}</span>
+        ${empty ? `<span class="text-[9px] text-[#B08A6A] ml-auto">待补充</span>` : ''}
+      </div>
+      <textarea id="${id}" rows="1" oninput="autoGrow(this);updateStarScore()" placeholder="${ph}" class="w-full bg-bg rounded-md px-2.5 py-1.5 text-[12px] leading-relaxed outline-none border border-line focus:border-lteal resize-none overflow-hidden">${esc(val||'')}</textarea>
+    </div>
+  </div>`;
+}
+function autoGrow(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function updateStarScore(){
+  const ids = ['aiSituation','aiTask','aiAction','aiResult'];
+  const n = ids.filter(id => ($(id) && $(id).value.trim())).length;
+  const box = $('aiStarScore');
+  if(box) box.textContent = n + '/4';
+}
+let curRecId = null;
+function openRecord(id){
+  const r = DB.records.find(x => x.id === id);
+  curRecId = id;
+  if(!r) return;
+  const ai = r.ai || {};
+  const inter = DB.internships.find(i => i.id === r.internshipId);
+  const done = r.status === '已完成';
+  const body = `
+  <div class="p-4 space-y-3">
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-[10px] px-1.5 py-0.5 rounded ${TYPE_CLS[r.type]||'bg-subbg text-t2'}">${esc(r.type)}</span>
+      <span class="text-[10px] text-t3">${fmtDateFull(r.date)} ${esc(r.time||'')} · ${weekdayName(r.date)}</span>
+      <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded ${STATUS_CLS[r.status]||''}">${esc(r.status)}</span>
+    </div>
+    ${inter ? `<p class="text-[11px] text-t3">关联实习：${esc(inter.company)}${inter.role?' · '+esc(inter.role):''}</p>` : ''}
+
+    ${rawBlock(r)}
+
+    ${r.ai ? `
+    <div class="bg-card border border-line rounded-xl shadow-card p-3.5 space-y-2.5">
+      <div class="flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-brand" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8L12 3z"/></svg>
+        <p class="text-[11px] font-medium text-t1">AI 整理 · STAR</p>
+        ${ai.auto && !done ? `<button onclick="openSplitSheet('${r.id}')" class="press ml-auto text-[10px] text-brand border border-sage/50 rounded px-1.5 py-0.5">调整分区</button>` : `<span class="ml-auto"></span>`}
+        <span id="aiStarScore" class="text-[9px] px-1.5 py-0.5 rounded bg-mist text-brand num">${[ai.situation,ai.task,ai.action,ai.result].filter(x => String(x||'').trim()).length}/4</span>
+      </div>
+      <p class="text-[9.5px] text-t3 -mt-1 leading-relaxed">四栏对应四件事：S 背景 · T 目标 · A 你的动作 · R 可验证产出${ai.derivedTask ? ' · T 由你的行动推断，请确认' : ''}</p>
+      <div class="space-y-3">
+        ${starRowS('situation','aiSituation',ai.situation,'谁的需求、为什么做')}
+        ${starRowS('task','aiTask',ai.task,'分给你的目标',true)}
+        ${starRowS('action','aiAction',ai.action,'你本人做了什么',true)}
+        ${starRowS('result','aiResult',ai.result,'产出 / 数据；没有就留空')}
+      </div>
+      ${ai.suggest && !done ? `<div id="aiSuggest" class="ml-8 bg-[#FDF8F1] border border-[#F1E3D2] rounded-[10px] px-2.5 py-2">
+        <p class="text-[10px] text-[#8C6A46] leading-relaxed">原文里出现过「${esc(ai.suggest.text)}」，只是候选，不算结果。</p>
+        <div class="flex gap-2 mt-1.5">
+          <button onclick="useSuggest()" class="press flex-1 h-7 rounded-[7px] bg-[#B58356] text-white text-[10.5px]">确认作为结果</button>
+          <button onclick="dropSuggest()" class="press flex-1 h-7 rounded-[7px] bg-white border border-[#E7D8C6] text-[10.5px] text-[#8C6A46]">忽略</button>
+        </div>
+      </div>` : ''}
+      <div><p class="text-[10px] text-t3 mb-1">能力标签（逗号分隔）</p><input id="aiAbility" value="${esc((ai.ability||[]).join('，'))}" class="w-full h-9 bg-bg rounded-md px-2.5 text-[12px] outline-none border border-line focus:border-lteal"></div>
+      ${ai.answer ? `<div class="bg-palteal rounded-md p-2"><p class="text-[10px] text-teal">你的补充</p><p class="text-[11px] text-t2 mt-0.5 leading-relaxed">${esc(ai.answer)}</p></div>` : ''}
+      ${ai.question && !done ? `
+      <div class="bg-[#EDF6F8] border border-[#CFE6EA] rounded-md p-2.5">
+        <p class="text-[10px] text-[#2F7F8C]">智能追问</p>
+        <p class="text-[12px] text-t1 mt-1 leading-relaxed">${esc(ai.question)}</p>
+        <div class="flex gap-1.5 flex-wrap mt-2">
+          ${(ai.qkey === 'situation' ? ['客户临时需求','导师安排的任务','日常例行工作','跨部门配合']
+            : ai.qkey === 'ability' ? ['信息整理','沟通协作','书面表达','细致耐心']
+            : ai.qkey === 'action' ? ['独立完成','和同事配合','查资料后自己判断','按流程执行']
+            : ['产出是清单','产出是报告','没有具体产出','记不清了']).map(a => `<button onclick="fillAnswer('${a}')" class="press text-[10px] px-2 py-1 bg-white border border-[#CFE6EA] rounded text-[#2F7F8C]">${a}</button>`).join('')}
+        </div>
+        <input id="aiAnswer" placeholder="也可以自己写…" class="w-full h-8 mt-2 bg-white rounded px-2 text-[11px] outline-none border border-[#CFE6EA] focus:border-[#D9C79E]">
+      </div>` : ''}
+    </div>
+    ${done ? `
+    <div class="bg-mist border border-sage/40 rounded-xl p-3">
+      <p class="text-[11px] text-brand font-medium">✓ 已确认沉淀</p>
+      <p class="text-[10px] text-t2 mt-1 leading-relaxed">该记录已进入素材/知识库，原始记录仍然保留。${r.confirmedAt ? '确认时间：' + new Date(r.confirmedAt).toLocaleString('zh-CN') : ''}</p>
+    </div>` : `
+    <div class="bg-card border border-line rounded-xl shadow-card p-3 space-y-2">
+      <p class="text-[11px] font-medium text-t1">确认后同时：</p>
+      <label class="flex items-center gap-2 text-[11px] text-t2"><input id="mkMaterial" type="checkbox" checked class="w-4 h-4 accent-[#2E6F66]">生成一条简历素材（待你二次确认）</label>
+      <label class="flex items-center gap-2 text-[11px] text-t2"><input id="mkKnowledge" type="checkbox" class="w-4 h-4 accent-[#2E6F66]">存入个人知识库</label>
+    </div>`}
+    ` : `
+    <div class="bg-cloudb border border-skyb/40 rounded-xl p-3.5 text-center">
+      <p class="text-[12px] text-blueg">AI 正在整理这条记录…</p>
+      <button onclick="closeSheet();processAI('${r.id}')" class="press mt-2 text-[11px] text-blueg underline">立即整理</button>
+    </div>`}
+  </div>`;
+  const foot = `
+  <div class="p-3 flex gap-2">
+    <button onclick="deleteRecord('${r.id}')" class="press w-10 h-10 flex items-center justify-center rounded-lg border border-line text-t3">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></svg>
+    </button>
+    <button onclick="saveRecordForm('${r.id}',false)" class="press flex-1 h-10 rounded-lg border border-line bg-white text-[13px] text-t2">保存修改</button>
+    ${done ? '' : `<button onclick="saveRecordForm('${r.id}',true)" class="press flex-[1.3] h-10 rounded-lg bg-brand text-white text-[13px] font-medium">确认沉淀</button>`}
+  </div>`;
+  openSheet('记录详情', body, foot);
+  ['aiSituation','aiTask','aiAction','aiResult'].forEach(k => { const el = $(k); if(el) autoGrow(el); });
+}
+function useSuggest(){
+  const r = DB.records.find(x => x.id === curRecId);
+  if(!r || !r.ai || !r.ai.suggest) return;
+  const el = $('aiResult');
+  if(el){ el.value = r.ai.suggest.text; autoGrow(el); }
+  r.ai.suggest = null; saveDB(); updateStarScore();
+  const box = $('aiSuggest'); if(box) box.remove();
+  toast('已填入结果，可再补充细节');
+}
+function dropSuggest(){
+  const r = DB.records.find(x => x.id === curRecId);
+  if(r && r.ai) r.ai.suggest = null;
+  saveDB();
+  const box = $('aiSuggest'); if(box) box.remove();
+}
+function fillAnswer(v){ const el = $('aiAnswer'); if(el){ el.value = v; el.focus(); } }
+/* ---- 调整分区：逐句改判，改完立刻看到四栏合并结果 ---- */
+let SPLIT = null;
+function openSplitSheet(id){
+  const r = DB.records.find(x => x.id === id);
+  if(!r) return;
+  const cur = r.ai && r.ai.split && r.ai.split.text === r.text ? r.ai.split.list : null;
+  const list = cur || classifyClauses(r.text);
+  const ov = {};
+  list.forEach((x, i) => { ov[i + '|' + x.text] = x.part; });
+  SPLIT = { id, text: r.text, ov };
+  renderSplitSheet();
+}
+function renderSplitSheet(){
+  if(!SPLIT) return;
+  const list = classifyClauses(SPLIT.text, SPLIT.ov);
+  const st = structFromClauses(list);
+  const rows = list.map((x, i) => {
+    const m = PART_META[x.part];
+    return `<button onclick="cycleSplit(${i})" class="press w-full flex items-start gap-2.5 bg-bg rounded-[10px] px-2.5 py-2 text-left">
+      <span class="shrink-0 w-6 h-6 rounded-[7px] text-[10px] font-medium flex items-center justify-center" style="background:${m.bg};color:${m.fg}">${m.L}</span>
+      <span class="flex-1 min-w-0 text-[12px] leading-[1.7] text-t2">${esc(x.text)}</span>
+      <span class="shrink-0 text-[9px] text-t3 mt-1">改</span>
+    </button>`;
+  }).join('');
+  const body = `<div class="p-4 space-y-3">
+    <div class="bg-white border border-line rounded-xl p-3">
+      <div class="flex items-center justify-between">
+        <p class="text-[11px] font-medium text-t1">原文分句 · ${list.length} 句</p>
+        <span class="text-[9.5px] text-t3">点字母切换归属</span>
+      </div>
+      <div class="mt-2 space-y-1.5">${rows}</div>
+    </div>
+    <div class="bg-white border border-line rounded-xl p-3 space-y-2">
+      <p class="text-[11px] font-medium text-t1">合并后写入四栏</p>
+      ${PART_ORDER.map(k => {
+        const m = PART_META[k];
+        return `<div class="flex gap-2">
+          <span class="shrink-0 w-5 h-5 rounded-[6px] text-[9px] font-medium flex items-center justify-center mt-[2px]" style="background:${m.bg};color:${m.fg}">${m.L}</span>
+          <p class="flex-1 text-[11.5px] leading-relaxed ${st[k] ? 'text-t2' : 'text-[#B08A6A]'}">${st[k] ? esc(st[k]) : '待补充'}</p>
+        </div>`;
+      }).join('')}
+      <p class="text-[9.5px] text-t3 pt-1 leading-relaxed">应用后会覆盖四栏现有内容，原始记录不变。</p>
+    </div>
+  </div>`;
+  const foot = `<div class="p-3 flex gap-2">
+    <button onclick="autoSplit()" class="press flex-1 h-10 rounded-lg border border-line bg-white text-[12.5px] text-t2">恢复自动分区</button>
+    <button onclick="applySplit()" class="press flex-[1.3] h-10 rounded-lg bg-brand text-white text-[12.5px] font-medium">应用分区</button>
+  </div>`;
+  openSheet('调整 STAR 分区', body, foot);
+}
+function cycleSplit(i){
+  if(!SPLIT) return;
+  const list = classifyClauses(SPLIT.text, SPLIT.ov);
+  const it = list[i];
+  if(!it) return;
+  const next = PART_ORDER[(PART_ORDER.indexOf(it.part) + 1) % PART_ORDER.length];
+  SPLIT.ov = { ...SPLIT.ov, [it.key]: next };
+  renderSplitSheet();
+}
+function autoSplit(){
+  if(!SPLIT) return;
+  SPLIT.ov = {};
+  renderSplitSheet();
+  toast('已恢复自动分区');
+}
+function applySplit(){
+  if(!SPLIT) return;
+  const r = DB.records.find(x => x.id === SPLIT.id);
+  if(!r) return;
+  const old = r.ai || {};
+  const next = makeDraft(r.text, null, { ov: SPLIT.ov });
+  if(old.ability && old.ability.length) next.ability = old.ability;
+  next.answer = old.answer || '';
+  r.ai = next;
+  SPLIT = null;
+  saveDB(); closeSheet(); refresh();
+  toast('分区已更新，四栏内容已重写');
+}
+function saveRecordForm(id, confirmIt){
+  const r = DB.records.find(x => x.id === id);
+  if(!r) return;
+  const text = ($('recEditText')?.value || '').trim();
+  if(!text){ toast('原始记录不能为空'); return; }
+  r.text = text;
+  if(r.ai){
+    r.ai.situation = ($('aiSituation')?.value || '').trim();
+    r.ai.task = ($('aiTask')?.value || '').trim() || r.ai.task;
+    r.ai.action = ($('aiAction')?.value || '').trim() || r.ai.action;
+    r.ai.result = ($('aiResult')?.value || '').trim();
+    r.ai.ability = ($('aiAbility')?.value || '').split(/[，,、\s]+/).map(x => x.trim()).filter(Boolean).slice(0,6);
+    const ans = ($('aiAnswer')?.value || '').trim();
+    if(ans){
+      r.ai.answer = ans;
+      if(!r.ai.result && !/记不清|不确定|忘了|不知道/.test(ans)) r.ai.result = ans;
+      r.ai.question = '';
+    }
+    if(!r.ai.task) r.ai.task = text.slice(0, 30);
+  }
+  if(confirmIt){
+    if(!r.ai){ toast('AI 还没整理完，请稍候'); return; }
+    if(!String(r.ai.task||'').trim() || !String(r.ai.action||'').trim()){
+      toast('请先补全 T 任务和 A 行动');
+      return;
+    }
+    if(!r.__vaguePass && /大概|可能|应该|差不多|左右|估计|似乎|或许|不确定/.test(String(r.ai.result||''))){
+      saveDB();
+      const finish = saveRecordForm;
+      ask('结果 R 表述不确定', '「大概」「可能」这类词让结果无法核对，建议改成具体数字或「无具体产出」。仍要沉淀吗？', '仍然沉淀', () => {
+        r.__vaguePass = true; finish(id, true);
+      });
+      return;
+    }
+    delete r.__vaguePass;
+    r.status = '已完成';
+    r.confirmedAt = new Date().toISOString();
+    const mkM = $('mkMaterial') ? $('mkMaterial').checked : false;
+    const mkK = $('mkKnowledge') ? $('mkKnowledge').checked : false;
+    if(mkM && !DB.materials.some(m => m.recordId === r.id)){
+      DB.materials.unshift({
+        id: uid(), recordId: r.id, title: shortTitle(r.ai.task),
+        situation: r.ai.situation || '', task: r.ai.task, action: r.ai.action,
+        result: r.ai.result, data: '', ability: r.ai.ability || [],
+        status: '待确认', createdAt: new Date().toISOString()
+      });
+    }
+    if(mkK && !DB.knowledge.some(k => k.recordId === r.id)){
+      DB.knowledge.unshift({
+        id: uid(), recordId: r.id, cat: '工作流程', title: (r.ai.task || '未命名条目').slice(0, 26),
+        body: [r.ai.situation, r.ai.result, r.ai.action, r.ai.answer].filter(Boolean).join('\n') || r.text,
+        tags: r.tags || [], source: r.date, createdAt: new Date().toISOString()
+      });
+    }
+  }
+  saveDB(); closeSheet(); refresh();
+  toast(confirmIt ? (r.ai && r.ai.ability.length ? '已确认沉淀，素材已生成' : '已确认沉淀') : '修改已保存');
+}
+function deleteRecord(id){
+  ask('删除这条记录？', '删除后进入回收站，可在「我的 → 回收站」恢复。', '删除', () => {
+    const i = DB.records.findIndex(x => x.id === id);
+    if(i < 0) return;
+    const [r] = DB.records.splice(i,1);
+    DB.trash.unshift({ id:'t'+uid(), kind:'record', title:r.summary||'记录', data:r, at:Date.now() });
+    saveDB(); closeSheet(); refresh(); toast('已移入回收站');
+  }, true);
+}
+
+/* =========================================================
+   AI 待整理
+   ========================================================= */
+SUB['pending'] = {
+  title:'AI 待整理',
+  actions(){ return `<button onclick="processAll()" class="press text-[11px] text-brand whitespace-nowrap">全部整理</button>`; },
+  body(){
+    const pend = DB.records.filter(r => r.status === '待确认' || r.status === '整理中');
+    return `<div class="p-4">
+      <div class="bg-palteal border border-skyb/30 rounded-xl p-3.5 mb-3">
+        <p class="text-[12px] font-medium text-t1">AI 整理流程</p>
+        <div class="flex items-center gap-1 mt-2 text-[10px] text-teal flex-wrap">
+          <span class="bg-white/70 px-1.5 py-0.5 rounded">记录</span><span>→</span>
+          <span class="bg-white/70 px-1.5 py-0.5 rounded">拆成 STAR</span><span>→</span>
+          <span class="bg-white/70 px-1.5 py-0.5 rounded">补缺失</span><span>→</span>
+          <span class="bg-white/70 px-1.5 py-0.5 rounded">你确认</span><span>→</span>
+          <span class="bg-white/70 px-1.5 py-0.5 rounded">沉淀</span>
+        </div>
+        <p class="text-[10px] text-t2 mt-2 leading-relaxed">AI 按语义把你的文字逐句分到 S/T/A/R，可随时「调整分区」逐句改判；不编造数量与成果，不确定的内容会追问你。</p>
+      </div>
+      ${pend.length ? `<div class="space-y-2">${pend.map(pendingCard).join('')}</div>` : emptyBox(I.spark, '没有待整理的记录', '保存新记录后，AI 会自动整理并显示在这里。', '去记一笔', "closeSub();switchTab('add')")}
+      ${DB.records.filter(r=>r.status==='已完成').length ? `<p class="text-center text-[10px] text-t3 mt-4">已沉淀 ${Q.confirmed().length} 条记录，可在时间轴查看</p>` : ''}
+    </div>`;
+  }
+};
+function pendingCard(r){
+  const ai = r.ai || {};
+  return `<div class="bg-card border border-line rounded-xl shadow-card p-3.5">
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] px-1.5 py-0.5 rounded ${TYPE_CLS[r.type]||'bg-subbg text-t2'}">${esc(r.type)}</span>
+      <span class="text-[10px] text-t3">${fmtDate(r.date)} ${esc(r.time||'')}</span>
+      <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded ${STATUS_CLS[r.status]||''}">${esc(r.status)}</span>
+    </div>
+    <p class="text-[13px] text-t1 mt-2 leading-relaxed line-clamp-3">${esc(r.text)}</p>
+    <div class="flex items-center gap-1 mt-1.5">
+      ${[['S',ai.situation],['T',ai.task],['A',ai.action],['R',ai.result]].map(([l,v]) => `<span class="text-[9px] px-1.5 py-0.5 rounded ${String(v||'').trim() ? 'bg-mist text-brand' : 'bg-[#F1F4F2] text-t3'}">${l}</span>`).join('')}
+      <span class="text-[9px] text-t3 ml-0.5">${[ai.situation,ai.task,ai.action,ai.result].filter(x => String(x||'').trim()).length}/4</span>
+    </div>
+    ${ai.question ? `<p class="text-[10px] text-[#2F7F8C] bg-[#EDF6F8] rounded px-2 py-1.5 mt-2 leading-relaxed">追问：${esc(ai.question)}</p>` : ''}
+    <div class="flex gap-2 mt-2.5">
+      ${r.status === '整理中'
+        ? `<button onclick="processAI('${r.id}')" class="press flex-1 h-8 bg-cloudb text-blueg text-[11px] font-medium rounded-md">立即整理</button>`
+        : `<button onclick="openRecord('${r.id}')" class="press flex-1 h-8 bg-brand text-white text-[11px] font-medium rounded-md">查看并确认</button>`}
+      <button onclick="appendNote('${r.id}')" class="press flex-1 h-8 bg-mist text-brand text-[11px] rounded-md">补充说明</button>
+      <button onclick="deleteRecord('${r.id}')" class="press w-8 h-8 border border-line rounded-md text-t3 text-[12px]">✕</button>
+    </div>
+  </div>`;
+}
+function appendNote(id){
+  const r = DB.records.find(x => x.id === id);
+  if(!r) return;
+  openSheet('补充说明', `
+    <div class="p-4">
+      <p class="text-[11px] text-t3 leading-relaxed mb-2">补充内容会追加到原始记录，AI 可重新整理。</p>
+      <textarea id="appendText" rows="4" placeholder="例如：最后产出是一份 12 页的证据清单" class="w-full bg-card rounded-md px-3 py-2 text-[13px] outline-none border border-line focus:border-lteal resize-none"></textarea>
+    </div>`,
+    `<div class="p-3"><button onclick="saveNote('${id}')" class="press w-full h-10 bg-brand text-white text-[13px] font-medium rounded-lg">保存补充</button></div>`);
+}
+function saveNote(id){
+  const r = DB.records.find(x => x.id === id);
+  const v = ($('appendText')?.value || '').trim();
+  if(!v){ toast('请输入补充内容'); return; }
+  r.text = r.text + '\n补充：' + v;
+  /* 已存为 STAR 的记录：把补充内容按语义合并进对应栏，不丢信息 */
+  if(r.struct){
+    const add = structFromClauses(classifyClauses(v));
+    PART_ORDER.forEach(k => {
+      if(add[k]) r.struct[k] = r.struct[k] ? r.struct[k] + '，' + add[k] : add[k];
+    });
+  }
+  r.ai = makeDraft(r.text, r.struct, { ov: ovOf(r) });
+  r.status = '待确认';
+  saveDB(); closeSheet(); refresh(); toast('已补充，AI 重新整理了结果');
+}
+function processAll(){
+  const list = DB.records.filter(r => r.status === '整理中');
+  if(!list.length){ toast('没有等待整理的记录'); return; }
+  list.forEach((r,i) => setTimeout(() => {
+    if(!DB.records.find(x => x.id === r.id)) return;
+    r.ai = makeDraft(r.text, r.struct, { ov: ovOf(r) }); r.status = '待确认'; refresh();
+  }, 400 * i));
+  toast(`正在整理 ${list.length} 条记录`);
+}
+
+/* =========================================================
+   成长
+   ========================================================= */
+function renderGrowth(){
+  const abs = Q.abilityStats();
+  const doneM = Q.materialsDone().length;
+  const pendingM = Q.materialsPending().length;
+  const monthRecords = DB.records.filter(r => (r.date||'').slice(0,7) === iso().slice(0,7)).length;
+  const maxCnt = Math.max(1, ...abs.map(a => a[1]));
+  $('page-growth').innerHTML = `
+  <header class="px-5 pt-7 pb-1">
+    <p class="h1">成长</p>
+    <p class="sub">记录 → 素材 → 报告，一步步沉淀</p>
+  </header>
+
+  <div class="px-5 mt-4 grid grid-cols-2 gap-2.5">
+    ${growthCard('简历素材', DB.materials.length, pendingM ? `${pendingM} 条待确认` : '全部已确认', "openSub('resume')", 'bg-mist text-brand', I.doc)}
+    ${growthCard('日志 · 周报', DB.reports.length, '份报告', "openSub('reports')", 'bg-cloudb text-blueg', I.book)}
+    ${growthCard('面试素材', DB.interviews.length, '个目标岗位', "openSub('interview')", 'bg-[#E9F3F6] text-[#347C8A]', I.brief)}
+    ${growthCard('知识库', DB.knowledge.length, '条可复用沉淀', "openSub('knowledge')", 'bg-palteal text-teal', I.spark)}
+  </div>
+
+  <div class="sec"><h2>能力画像</h2><span class="more">来自已确认素材</span></div>
+  <div class="px-5">
+    <div class="card p-4">
+      ${abs.length ? abs.slice(0,6).map(([name,cnt]) => `
+        <div class="mb-3 last:mb-0">
+          <div class="flex items-center justify-between text-[11px] mb-1.5">
+            <span class="text-t2">${esc(name)}</span>
+            <span class="text-t3 num">${cnt} 条</span>
+          </div>
+          <div class="h-1.5 bg-[#F1F6F4] rounded-full overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-brand to-[#5A93AC]" style="width:${Math.max(8, Math.round(cnt / maxCnt * 100))}%"></div></div>
+        </div>`).join('') : `<p class="text-[11.5px] text-t3 leading-relaxed">确认简历素材后，这里会自动汇总能力标签。</p>
+        <button onclick="openSub('resume')" class="press mt-3 w-full btn-soft">去素材库看看</button>`}
+    </div>
+  </div>
+
+  <div class="px-5 mt-3">
+    <div class="card grid grid-cols-4 divide-x divide-[#F0F5F3] py-1">
+      ${miniStat('本月记录', monthRecords, "switchTab('timeline')")}
+      ${miniStat('已沉淀记录', Q.confirmed().length, "switchTab('timeline')")}
+      ${miniStat('覆盖能力', abs.length, "openSub('resume')")}
+      ${miniStat('已确认素材', doneM, "openSub('resume')")}
+    </div>
+  </div>
+
+  <div class="sec"><h2>最近沉淀</h2><span class="more">素材与知识</span></div>
+  <div class="px-5"><div class="card p-4">${recentSediments()}</div></div>
+
+  <div class="sec"><h2>导出与总结</h2><span class="more">内容均来自你的记录</span></div>
+  <div class="px-5">
+    <div class="card p-4">
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="exportWord()" class="press h-10 bg-brand text-white text-[11.5px] rounded-[11px]">导出 Word</button>
+        <button onclick="exportMarkdown()" class="press h-10 bg-mist text-brand text-[11.5px] rounded-[11px]">导出 Markdown</button>
+        <button onclick="createSummaryReport()" class="press h-10 bg-cloudb text-blueg text-[11.5px] rounded-[11px]">生成本月总结</button>
+        <button onclick="window.print()" class="press h-10 bg-bg border border-line text-t2 text-[11.5px] rounded-[11px]">打印 / PDF</button>
+      </div>
+      <p class="text-[10px] text-t3 mt-2.5 leading-relaxed">导出的文件会直接下载到本机，不会上传。</p>
+    </div>
+  </div>
+  <div class="h-6"></div>`;
+}
+function growthCard(title, num, sub, onclick, color, icon){
+  return `<button onclick="${onclick}" class="press card p-3.5 text-left">
+    <div class="flex items-start justify-between">
+      <span class="w-8 h-8 rounded-[10px] ${color} flex items-center justify-center">${icon}</span>
+      <svg class="w-4 h-4 text-[#C6D2CE] mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+    <p class="text-[20px] font-semibold text-t1 mt-2.5 leading-none num">${num}</p>
+    <p class="text-[11.5px] text-t2 mt-2">${esc(title)}</p>
+    <p class="text-[10px] text-t3 mt-0.5 truncate">${esc(sub)}</p>
+  </button>`;
+}
+
+/* =========================================================
+   我的
+   ========================================================= */
+function renderMe(){
+  const p = DB.profile;
+  const filled = Q.profileFilled();
+  const score = Q.profileScore();
+  $('page-me').innerHTML = `
+  <header class="px-5 pt-7 pb-1">
+    <p class="h1">我的</p>
+    <p class="sub">资料由你自己填写与维护</p>
+  </header>
+
+  <div class="px-5 mt-4">
+    ${filled ? `<div class="card p-4">
+      <div class="flex items-start gap-3">
+        <div class="w-14 h-14 rounded-[18px] grad-soft text-brand flex items-center justify-center text-[20px] font-semibold shrink-0">${esc(firstChar(p.avatar || p.name))}</div>
+        <div class="min-w-0 flex-1">
+          <p class="text-[17px] font-semibold text-t1 truncate">${esc(p.name)}</p>
+          <p class="text-[11px] text-t2 mt-1 leading-relaxed">${esc([p.school, p.major, p.degree].filter(Boolean).join(' · ') || '未填写学校专业')}</p>
+          ${p.target ? `<span class="inline-block text-[10px] text-brand bg-mist px-2 py-0.5 rounded-full mt-1.5">${esc(p.target)}</span>` : ''}
+        </div>
+        <button onclick="openSub('profile')" class="press text-[11px] text-brand border border-[#CFE5D9] bg-[#F7FBF9] rounded-full px-3 py-1.5 shrink-0">编辑</button>
+      </div>
+      <div class="grid grid-cols-2 gap-y-2 gap-x-3 mt-3.5 pt-3.5 border-t border-[#F0F5F3] text-[11px]">
+        <p class="text-t3 truncate">邮箱 <span class="text-t2 ml-1">${esc(p.email || '未填写')}</span></p>
+        <p class="text-t3 truncate">电话 <span class="text-t2 ml-1">${esc(p.phone || '未填写')}</span></p>
+        <p class="text-t3 truncate">城市 <span class="text-t2 ml-1">${esc(p.city || '未填写')}</span></p>
+        <p class="text-t3 truncate">毕业 <span class="text-t2 ml-1">${esc(p.grad || '未填写')}</span></p>
+      </div>
+      ${p.bio ? `<p class="text-[11px] text-t2 mt-3 leading-relaxed bg-[#F7FAF9] rounded-[10px] p-2.5">${esc(p.bio)}</p>` : ''}
+      ${(p.skills||[]).length ? `<div class="flex flex-wrap gap-1.5 mt-2.5">${p.skills.map(s => `<span class="text-[10px] text-brand bg-mist px-2 py-0.5 rounded-full">${esc(s)}</span>`).join('')}</div>` : ''}
+    </div>` : `<button onclick="openSub('profile')" class="press w-full card !border-dashed !border-[#BFDCCB] p-4 text-left">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-[18px] bg-subbg text-t3 flex items-center justify-center text-[20px]">?</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[14px] font-medium text-t1">还没有填写个人信息</p>
+          <p class="text-[10.5px] text-t3 mt-1 leading-relaxed">没有任何预置数据，点击填写姓名、学校、求职方向。</p>
+          <div class="flex items-center gap-2 mt-2.5">
+            <div class="flex-1 h-1 bg-subbg rounded-full overflow-hidden"><div class="h-full bg-brand rounded-full" style="width:${score}%"></div></div>
+            <span class="text-[10px] text-brand num">${score}%</span>
+          </div>
+        </div>
+      </div>
+    </button>`}
+  </div>
+
+  <div class="sec"><h2>实习档案</h2>
+    <div class="flex items-center gap-3.5">
+      <button onclick="openSub('archive')" class="press more">全部</button>
+      <button onclick="openSub('archiveForm')" class="press text-[11px] text-brand">+ 新建</button>
+    </div>
+  </div>
+  <div class="px-5">
+    ${DB.internships.length ? `<div class="space-y-2.5">${DB.internships.map(internCard).join('')}</div>` :
+      `<div class="card !border-dashed px-4 py-4 text-center">
+        <p class="text-[12px] text-t2">还没有实习档案</p>
+        <p class="text-[10px] text-t3 mt-1">添加后，记录可以按公司 / 岗位归档</p>
+      </div>`}
+  </div>
+
+  <div class="sec"><h2>资料与设置</h2></div>
+  <div class="px-5">
+    <div class="card overflow-hidden divide-y divide-[#F0F5F3]">
+      ${meRow('个人资料', '姓名、学校、联系方式', "openSub('profile')")}
+      ${meRow('隐私与可见性', DB.settings.privacy, "openSub('privacy')")}
+      ${meRow('AI 整理偏好', DB.settings.tone, "openSub('tone')")}
+      ${meRow('提醒设置', (DB.settings.remind?'每日提醒开':'每日提醒关') + ' · ' + (DB.settings.weekly?'周报提醒开':'周报提醒关'), "openSub('remind')")}
+    </div>
+  </div>
+
+  <div class="sec"><h2>数据</h2></div>
+  <div class="px-5">
+    <div class="card overflow-hidden divide-y divide-[#F0F5F3]">
+      ${meRow('数据管理', '导出 / 导入 / 清除', "openSub('data')")}
+      ${meRow('回收站', DB.trash.length ? `${DB.trash.length} 项待处理` : '空', "openSub('trash')")}
+      ${meRow('关于与隐私政策', 'v2.1 · 本地存储', "openSub('about')")}
+    </div>
+  </div>
+
+  <button onclick="clearAll()" class="press mx-5 mt-5 w-[calc(100%-2.5rem)] h-11 bg-white border border-line text-[12px] text-[#9A6B58] rounded-[13px]">清除本机全部数据</button>
+  <p class="text-center text-[10px] text-t3 mt-4 pb-2 leading-relaxed">数据只保存在当前浏览器，换设备不会同步</p>`;
+}
+function internCard(i){
+  return `<button onclick="openSub('archiveDetail','${i.id}')" class="press w-full card px-3.5 py-3 flex items-center gap-3 text-left">
+    <span class="w-9 h-9 rounded-[11px] bg-mist text-brand flex items-center justify-center text-[13px] font-semibold shrink-0">${esc(i.company.slice(0,1))}</span>
+    <span class="min-w-0 flex-1">
+      <span class="block text-[12.5px] font-medium text-t1 truncate">${esc(i.company)}${i.dept?' · '+esc(i.dept):''}</span>
+      <span class="block text-[10px] text-t3 mt-0.5 truncate">${esc(i.role||'未填写岗位')} · ${esc(i.start||'')} 至 ${esc(i.end||'')}</span>
+    </span>
+    <span class="text-[9.5px] px-2 py-0.5 rounded-full ${i.status==='进行中'?'bg-mist text-brand':'bg-[#F2F5F4] text-t3'} shrink-0">${esc(i.status)}</span>
+  </button>`;
+}
+function meRow(title, sub, onclick){
+  return `<button onclick="${onclick}" class="press w-full flex items-center px-4 py-3.5 text-left">
+    <span class="text-[12.5px] text-t1 flex-1">${esc(title)}</span>
+    <span class="text-[10px] text-t3 mr-2 max-w-[150px] truncate">${esc(sub)}</span>
+    <svg class="w-4 h-4 text-[#C6D2CE] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+  </button>`;
+}
+
+function clearAll(){
+  ask('清除全部数据？', '个人信息、记录、素材、报告都会被删除，且无法恢复。建议先在数据管理中导出备份。', '确认清除', () => {
+    DB = blankDB();
+    saveDB();
+    closeSheet(); closeSub();
+    switchTab('home');
+    toast('已清除全部数据');
+  }, true);
+}
+</script>
+
+<script>
+/* =========================================================
+   个人资料（用户自行录入，逐项显示）
+   ========================================================= */
+let pSkills = [], pAvatar = '';
+SUB['profile'] = {
+  onOpen(){ pSkills = [...(DB.profile.skills || [])]; pAvatar = DB.profile.avatar || ''; },
+  title:'个人资料',
+  actions(){ return `<button onclick="saveProfile()" class="press text-[12px] text-brand whitespace-nowrap pr-1">保存</button>`; },
+  body(){
+    const p = DB.profile;
+    const emojis = ['🌱','🌿','🍀','☀️','🌊','📚','⚖️','💡'];
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-3">
+          <div id="avatarPreview" class="w-14 h-14 rounded-full bg-mist text-brand flex items-center justify-center text-[22px] font-semibold">${esc(pAvatar || firstChar(p.name))}</div>
+          <div>
+            <p class="text-[12px] text-t1">头像</p>
+            <p class="text-[10px] text-t3 mt-0.5">选一个图标，或留空用姓名首字</p>
+            <button onclick="setAvatar('')" class="press text-[10px] text-brand mt-1">使用姓名首字</button>
+          </div>
+        </div>
+        <div class="flex gap-1.5 flex-wrap mt-3">
+          ${emojis.map(e => `<button onclick="setAvatar('${e}')" class="press w-8 h-8 rounded-lg border ${pAvatar===e?'border-brand bg-mist':'border-line bg-bg'} text-[15px]">${e}</button>`).join('')}
+          <input id="avatarCustom" maxlength="2" placeholder="自定义" class="w-16 h-8 bg-bg border border-line rounded-lg px-2 text-[11px] outline-none focus:border-lteal" oninput="setAvatar(this.value)">
+        </div>
+      </div>
+
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 space-y-3">
+        <p class="text-[12px] font-medium text-t1">基本信息</p>
+        ${field('姓名 *','pfName',p.name,'请输入真实姓名')}
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>${field('学校','pfSchool',p.school,'如：XX 大学')}</div>
+          <div>${field('专业','pfMajor',p.major,'如：法学')}</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div><p class="text-[11px] text-t2 mb-1">学历</p>
+            <select id="pfDegree" class="w-full h-10 bg-bg rounded-md px-2 text-[12px] outline-none border border-line focus:border-lteal">
+              ${['','本科','硕士','博士','专科','其他'].map(d => `<option value="${d}" ${p.degree===d?'selected':''}>${d||'未选择'}</option>`).join('')}
+            </select>
+          </div>
+          <div>${field('毕业年份','pfGrad',p.grad,'如：2027')}</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>${field('所在城市','pfCity',p.city,'如：上海')}</div>
+          <div>${field('求职方向','pfTarget',p.target,'如：法务实习生')}</div>
+        </div>
+      </div>
+
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 space-y-3">
+        <p class="text-[12px] font-medium text-t1">联系方式</p>
+        ${field('邮箱','pfEmail',p.email,'name@example.com','email')}
+        ${field('手机号','pfPhone',p.phone,'11 位手机号','tel')}
+        <p class="text-[10px] text-t3">仅保存在本机浏览器，不会上传或公开展示。</p>
+      </div>
+
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <p class="text-[12px] font-medium text-t1 mb-2">技能标签</p>
+        <div id="skillBox" class="flex flex-wrap gap-1.5 mb-2"></div>
+        <div class="flex gap-2">
+          <input id="skillInput" placeholder="如：法律检索，回车添加" onkeydown="if(event.key==='Enter'){event.preventDefault();addSkill()}" class="flex-1 h-9 bg-bg rounded-md px-3 text-[12px] outline-none border border-line focus:border-lteal">
+          <button onclick="addSkill()" class="press h-9 px-3 bg-mist text-brand text-[11px] rounded-md">添加</button>
+        </div>
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          ${['Excel','PPT','法律检索','英语'].filter(s => !pSkills.includes(s)).map(s => `<button onclick="quickSkill('${s}')" class="press text-[10px] text-t3 border border-dashed border-line px-2 py-1 rounded">+ ${s}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <p class="text-[12px] font-medium text-t1 mb-2">个人简介</p>
+        <textarea id="pfBio" rows="4" placeholder="一句话介绍自己，比如目标岗位、擅长的事…" class="w-full bg-bg rounded-md px-3 py-2 text-[12px] leading-relaxed outline-none border border-line focus:border-lteal resize-none">${esc(p.bio)}</textarea>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="clearProfile()" class="press flex-1 h-10 bg-white border border-line rounded-lg text-[12px] text-[#8C6A64]">清空资料</button>
+        <button onclick="saveProfile()" class="press flex-[2] h-10 bg-brand text-white text-[13px] font-medium rounded-lg">保存个人信息</button>
+      </div>
+      <p class="text-center text-[10px] text-t3 pb-2">未填写的项目不会显示在首页和「我的」中</p>
+    </div>`;
+  },
+  after(){ renderSkills(); }
+};
+function field(label, id, value, ph, type){
+  return `<div><p class="text-[11px] text-t2 mb-1">${esc(label)}</p>
+    <input id="${id}" type="${type||'text'}" value="${esc(value||'')}" placeholder="${esc(ph||'')}" class="w-full h-10 bg-bg rounded-md px-3 text-[12px] outline-none border border-line focus:border-lteal"></div>`;
+}
+function renderSkills(){
+  const box = $('skillBox');
+  if(!box) return;
+  box.innerHTML = pSkills.length ? pSkills.map((s,i) => `<span class="text-[11px] bg-mist text-brand px-2 py-1 rounded flex items-center gap-1">${esc(s)}<button onclick="delSkill(${i})" class="text-brand/60 text-[11px] leading-none">✕</button></span>`).join('')
+    : '<span class="text-[10px] text-t3">还没有技能标签</span>';
+}
+function addSkill(){
+  const inp = $('skillInput'); const v = (inp.value||'').trim();
+  if(!v) return;
+  if(pSkills.includes(v)){ toast('已有该标签'); return; }
+  if(pSkills.length >= 10){ toast('最多 10 个标签'); return; }
+  pSkills.push(v); inp.value=''; renderSkills();
+}
+function quickSkill(v){ if(pSkills.includes(v)) return; pSkills.push(v); renderSkills(); }
+function delSkill(i){ pSkills.splice(i,1); renderSkills(); }
+function setAvatar(v){
+  pAvatar = (v||'').trim().slice(0,2);
+  const pv = $('avatarPreview');
+  if(pv) pv.textContent = esc(pAvatar || firstChar($('pfName').value));
+  document.querySelectorAll('[onclick^="setAvatar"]').forEach(b => {
+    const val = (b.getAttribute('onclick').match(/'([^']*)'/)||[])[1] || '';
+    b.classList.toggle('border-brand', val === pAvatar);
+    b.classList.toggle('bg-mist', val === pAvatar);
+    b.classList.toggle('border-line', val !== pAvatar);
+    b.classList.toggle('bg-bg', val !== pAvatar);
+  });
+}
+function saveProfile(){
+  const name = ($('pfName').value||'').trim();
+  if(!name){ toast('请填写姓名'); $('pfName').focus(); return; }
+  const email = ($('pfEmail').value||'').trim();
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast('邮箱格式不正确'); $('pfEmail').focus(); return; }
+  const phone = ($('pfPhone').value||'').trim();
+  if(phone && !/^[0-9+\-\s]{6,20}$/.test(phone)){ toast('手机号格式不正确'); $('pfPhone').focus(); return; }
+  DB.profile = {
+    ...DB.profile, avatar: pAvatar, name,
+    school: ($('pfSchool').value||'').trim(), major: ($('pfMajor').value||'').trim(),
+    degree: $('pfDegree').value, grad: ($('pfGrad').value||'').trim(),
+    city: ($('pfCity').value||'').trim(), target: ($('pfTarget').value||'').trim(),
+    email, phone, bio: ($('pfBio').value||'').trim(), skills: [...pSkills]
+  };
+  saveDB(); backSub(); renderTab(currentTab); renderNavBadge();
+  toast('个人信息已保存');
+}
+function clearProfile(){
+  ask('清空个人资料？', '姓名、学校、联系方式、技能标签都会被清空，记录与素材不受影响。', '清空', () => {
+    DB.profile = { avatar:'', name:'', school:'', major:'', degree:'', grad:'', city:'', email:'', phone:'', target:'', bio:'', skills:[] };
+    saveDB(); backSub(); renderTab(currentTab); toast('个人资料已清空');
+  }, true);
+}
+
+/* =========================================================
+   实习档案
+   ========================================================= */
+SUB['archiveForm'] = {
+  onOpen(param){ archEditId = param || null; },
+  title(){ return archEditId ? '编辑实习档案' : '新建实习档案'; },
+  actions(){ return `<button onclick="saveInternship()" class="press text-[12px] text-brand whitespace-nowrap pr-1">保存</button>`; },
+  body(){
+    const id = archEditId || subParam();
+    const i = DB.internships.find(x => x.id === id) || {};
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 space-y-3">
+        ${field('公司 / 单位 *','itCompany',i.company,'如：明衡律师事务所')}
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>${field('部门','itDept',i.dept,'如：知识产权部')}</div>
+          <div>${field('岗位','itRole',i.role,'如：法务实习生')}</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div><p class="text-[11px] text-t2 mb-1">开始日期</p><input id="itStart" type="date" value="${esc(i.start||iso())}" class="w-full h-10 bg-bg rounded-md px-2 text-[12px] outline-none border border-line focus:border-lteal"></div>
+          <div><p class="text-[11px] text-t2 mb-1">结束日期</p><input id="itEnd" type="date" value="${esc(i.end||'')}" class="w-full h-10 bg-bg rounded-md px-2 text-[12px] outline-none border border-line focus:border-lteal"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div><p class="text-[11px] text-t2 mb-1">每周出勤</p>
+            <select id="itWeekly" class="w-full h-10 bg-bg rounded-md px-2 text-[12px] outline-none border border-line">
+              ${['','1 天','2 天','3 天','4 天','5 天'].map(d => `<option value="${d}" ${i.weekly===d?'selected':''}>${d||'未选择'}</option>`).join('')}
+            </select>
+          </div>
+          <div><p class="text-[11px] text-t2 mb-1">状态</p>
+            <select id="itStatus" class="w-full h-10 bg-bg rounded-md px-2 text-[12px] outline-none border border-line">
+              ${['进行中','已结束','已归档'].map(d => `<option value="${d}" ${(i.status||'进行中')===d?'selected':''}>${d}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        ${field('指导人 / 带教','itMentor',i.mentor,'如：王律师')}
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <p class="text-[11px] text-t2 mb-1">备注</p>
+        <textarea id="itNote" rows="3" placeholder="工作内容、通勤、转正机会等" class="w-full bg-bg rounded-md px-3 py-2 text-[12px] outline-none border border-line focus:border-lteal resize-none">${esc(i.note||'')}</textarea>
+      </div>
+      ${id ? `<button onclick="delInternship('${id}')" class="press w-full h-10 bg-white border border-line rounded-lg text-[12px] text-[#8C6A64]">删除这份实习档案</button>` : ''}
+      <p class="text-center text-[10px] text-t3 pb-2">同一时间仅保留一份「进行中」档案</p>
+    </div>`;
+  }
+};
+let archEditId = null;
+function saveInternship(){
+  const company = ($('itCompany').value||'').trim();
+  if(!company){ toast('请填写公司名称'); $('itCompany').focus(); return; }
+  const start = $('itStart').value, end = $('itEnd').value;
+  if(!start){ toast('请选择开始日期'); return; }
+  if(end && end < start){ toast('结束日期不能早于开始日期'); return; }
+  const status = $('itStatus').value;
+  const data = {
+    company, dept: ($('itDept').value||'').trim(), role: ($('itRole').value||'').trim(),
+    start, end, weekly: $('itWeekly').value, status,
+    mentor: ($('itMentor').value||'').trim(), note: ($('itNote').value||'').trim()
+  };
+  const editId = archEditId;
+  if(editId){
+    const it = DB.internships.find(x => x.id === editId);
+    if(it) Object.assign(it, data);
+  } else {
+    DB.internships.unshift({ id: uid(), ...data, createdAt: new Date().toISOString() });
+  }
+  if(status === '进行中'){
+    DB.internships.forEach(i => { if(i.company !== company && i.status === '进行中') i.status = '已结束'; });
+  }
+  saveDB(); backSub(); refresh(); toast(editId ? '档案已更新' : '实习档案已创建');
+}
+function delInternship(id){
+  ask('删除这份实习档案？', '关联的记录不会被删除，但会失去实习归属。', '删除', () => {
+    DB.internships = DB.internships.filter(i => i.id !== id);
+    saveDB(); closeSub(); refresh(); toast('已删除实习档案');
+  }, true);
+}
+SUB['archiveDetail'] = {
+  onOpen(){ archTab = '概览'; },
+  title(){
+    const i = DB.internships.find(x => x.id === subParam());
+    return i ? i.company : '实习档案';
+  },
+  actions(){
+    const id = subParam();
+    return `<button onclick="openSub('archiveForm','${id}')" class="press text-[12px] text-brand whitespace-nowrap pr-1">编辑</button>`;
+  },
+  body(){
+    const i = DB.internships.find(x => x.id === subParam());
+    if(!i) return `<div class="p-4">${emptyBox(I.brief,'档案不存在','可能已被删除。','返回',"closeSub()")}</div>`;
+    const recs = DB.records.filter(r => r.internshipId === i.id);
+    const mIds = DB.materials.filter(m => recs.some(r => r.id === m.recordId));
+    const ks = DB.knowledge.filter(k => recs.some(r => r.id === k.recordId));
+    const tabs = ['概览','记录','素材','知识'];
+    let content = '';
+    if(archTab === '概览'){
+      const total = Math.max(1, daysBetween(i.start, i.end || iso()));
+      const done = Math.min(total, Math.max(0, daysBetween(i.start, iso())));
+      content = `<div class="space-y-3">
+        <div class="bg-card border border-line rounded-xl shadow-card p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-[15px] font-semibold text-t1">${esc(i.company)}</p>
+              <p class="text-[11px] text-t3 mt-1">${esc(i.dept||'未填写部门')} · ${esc(i.role||'未填写岗位')}</p>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded ${i.status==='进行中'?'bg-mist text-brand':'bg-subbg text-t3'}">${esc(i.status)}</span>
+          </div>
+          <div class="mt-3 pt-3 border-t border-line grid grid-cols-2 gap-y-2.5 text-[11px]">
+            <p class="text-t3">时间</p><p class="text-t2 text-right">${esc(i.start||'未填')} — ${esc(i.end||'未填')}</p>
+            <p class="text-t3">每周出勤</p><p class="text-t2 text-right">${esc(i.weekly||'未填写')}</p>
+            <p class="text-t3">指导人</p><p class="text-t2 text-right">${esc(i.mentor||'未填写')}</p>
+            <p class="text-t3">已实习</p><p class="text-t2 text-right">${done} 天 / ${total} 天</p>
+          </div>
+          ${i.note ? `<p class="text-[11px] text-t2 bg-bg rounded-md p-2.5 mt-3 leading-relaxed">${esc(i.note)}</p>` : ''}
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          ${statTile('记录', recs.length, '条')}
+          ${statTile('素材', mIds.length, '条')}
+          ${statTile('知识', ks.length, '条')}
+        </div>
+        <div class="bg-card border border-line rounded-xl shadow-card p-4">
+          <p class="text-[12px] font-medium text-t1 mb-2">快速操作</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="draft.internshipId='${i.id}';closeSub();switchTab('add')" class="press h-9 bg-mist text-brand text-[11px] rounded-md">为这份实习记一笔</button>
+            <button onclick="archTab='记录';renderSub()" class="press h-9 bg-bg border border-line text-t2 text-[11px] rounded-md">查看全部记录</button>
+          </div>
+        </div>
+      </div>`;
+    } else if(archTab === '记录'){
+      content = recs.length ? `<div class="space-y-2">${recs.map(recordCard).join('')}</div>` :
+        emptyBox(I.doc,'这份实习还没有记录','每次工作后随手记一笔，之后写简历就有素材了。','去记录',`draft.internshipId='${i.id}';closeSub();switchTab('add')`);
+    } else if(archTab === '素材'){
+      content = mIds.length ? `<div class="space-y-2">${mIds.map(m => materialCard(m, true)).join('')}</div>` :
+        emptyBox(I.doc,'还没有简历素材','在记录详情里确认沉淀后，会自动生成素材。','查看待整理',"openSub('pending')");
+    } else {
+      content = ks.length ? `<div class="space-y-2">${ks.map(k => knowledgeCard(k)).join('')}</div>` :
+        emptyBox(I.book,'还没有知识沉淀','确认记录时可勾选「存入知识库」。','去知识库',"replaceSub('knowledge')");
+    }
+    return `<div class="p-4">
+      <div class="flex gap-1.5 bg-subbg p-1 rounded-lg mb-3">
+        ${tabs.map(t => `<button onclick="archTab='${t}';renderSub()" class="press flex-1 h-8 rounded-md text-[11px] ${archTab===t?'bg-white text-t1 font-medium shadow-soft':'text-t2'}">${t}</button>`).join('')}
+      </div>
+      ${content}
+    </div>`;
+  }
+};
+let archTab = '概览';
+</script>
+
+<script>
+/* =========================================================
+   公共：复制
+   ========================================================= */
+function copyText(t){
+  const done = () => toast('已复制到剪贴板');
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch(e) { toast('复制失败，请长按选择文本'); }
+    ta.remove();
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(fallback);
+  } else fallback();
+}
+
+/* =========================================================
+   简历素材库
+   ========================================================= */
+let resumeFilter = '全部', resumeStatus = '全部', resumeSort = 'new', mAbility = [], mEditId = null;
+SUB['resume'] = {
+  onOpen(){ resumeFilter = '全部'; resumeStatus = '全部'; },
+  title:'简历素材库',
+  actions(){ return `<button onclick="openSub('materialForm')" class="press w-8 h-8 flex items-center justify-center text-brand text-[20px] leading-none">+</button>`; },
+  body(){
+    const abilities = [...new Set(DB.materials.flatMap(m => m.ability || []))];
+    let list = DB.materials.slice();
+    if(resumeStatus !== '全部') list = list.filter(m => m.status === resumeStatus);
+    if(resumeFilter !== '全部') list = list.filter(m => (m.ability || []).includes(resumeFilter));
+    if(resumeSort === 'ability') list.sort((a,b) => (b.ability||[]).length - (a.ability||[]).length || (b.createdAt||'').localeCompare(a.createdAt||''));
+    else list.sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+    return `<div class="p-4">
+      <div class="flex gap-2 overflow-x-auto pb-2">
+        ${['全部','待确认','已确认'].map(s => `<button onclick="resumeStatus='${s}';renderSub()" class="press whitespace-nowrap text-[11px] px-2.5 py-1.5 rounded-md border ${resumeStatus===s?'bg-brand text-white border-brand':'bg-card text-t2 border-line'}">${s}</button>`).join('')}
+      </div>
+      ${abilities.length ? `<div class="flex gap-1.5 overflow-x-auto pb-2">
+        ${['全部', ...abilities].map(a => `<button onclick="resumeFilter='${esc(a)}';renderSub()" class="press whitespace-nowrap text-[10px] px-2 py-1 rounded-full border ${resumeFilter===a?'bg-brand text-white border-brand':'bg-card text-t3 border-line'}">${esc(a)}</button>`).join('')}
+      </div>` : '<div class="pb-2"></div>'}
+      <div class="flex items-center gap-2 pb-2.5">
+        <span class="text-[10px] text-t3">排序</span>
+        ${[['new','最新'],['ability','能力标签多']].map(([k,v]) => `<button onclick="resumeSort='${k}';renderSub()" class="press text-[10px] px-2 py-1 rounded-md border ${resumeSort===k?'bg-subbg text-t1 border-line font-medium':'bg-card text-t3 border-line'}">${v}</button>`).join('')}
+      </div>
+      <p class="text-[10px] text-t3 leading-relaxed mb-2.5">素材均来自你的记录与确认操作，AI 不编造数量与贡献；「待确认」素材不会进入正式简历。</p>
+      ${list.length ? `<div class="space-y-2">${list.map(m => materialCard(m)).join('')}</div>` :
+        emptyBox(I.doc, DB.materials.length ? '该筛选下没有素材' : '还没有简历素材', DB.materials.length ? '换个筛选条件试试。' : '确认一条记录后即可自动生成，也可以手动新增。', DB.materials.length ? '' : '手动新增素材', "openSub('materialForm')")}
+    </div>`;
+  }
+};
+function materialCard(m, compact){
+  const src = DB.records.find(r => r.id === m.recordId);
+  const line = resumeLine(m);
+  return `<div class="bg-card border border-line rounded-xl shadow-card ${compact?'p-3':'p-3.5'}">
+    <div class="flex items-start gap-2">
+      <div class="min-w-0 flex-1">
+        <p class="text-[13px] font-medium text-t1 leading-snug">${esc(m.title)}</p>
+        <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+          <span class="text-[10px] px-1.5 py-0.5 rounded ${m.status==='已确认'?'bg-mist text-brand':'bg-[#E8F4F6] text-[#2F7F8C]'}">${esc(m.status)}</span>
+          ${(m.ability||[]).map(a => `<span class="text-[10px] text-t3 bg-subbg px-1.5 py-0.5 rounded">${esc(a)}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="mt-2 bg-[#FAFCFB] border border-line rounded-[9px] px-2.5 py-2">
+      <p class="text-[9.5px] text-t3 mb-0.5">简历文案 · 可直接粘贴</p>
+      <p class="text-[11.5px] text-t2 leading-[1.8]">${esc(line)}</p>
+    </div>
+    <details class="mt-2">
+      <summary class="text-[11px] text-brand flex items-center gap-1">四栏详情 <span class="text-t3 text-[10px]">点击展开</span></summary>
+      <div class="mt-2 space-y-1.5 text-[11px] leading-relaxed">
+        ${PART_ORDER.map(k => {
+          const p = PART_META[k];
+          const v = m[k];
+          return `<div class="flex gap-2 pl-2 border-l-[3px]" style="border-color:${v ? p.fg : '#DDE6E2'}">
+            <span class="shrink-0 w-4 h-4 rounded-[5px] text-[9px] font-semibold flex items-center justify-center mt-[1px]" style="background:${v ? p.bg : '#F1F4F2'};color:${v ? p.fg : '#9AA7A3'}">${p.L}</span>
+            <div class="min-w-0 flex-1">
+              <p class="text-[9px] font-medium" style="color:${v ? p.fg : '#8A9793'}">${p.name}</p>
+              <p class="${v ? 'text-t2' : 'text-t3 italic'} leading-relaxed">${esc(v || '待补充')}</p>
+            </div>
+          </div>`;
+        }).join('')}
+        ${m.data ? `<div class="bg-bg rounded-md p-2"><p class="text-t3 text-[10px]">数据依据</p><p class="text-t2 mt-0.5">${esc(m.data)}</p></div>` : ''}
+        <div class="flex items-center gap-3 pt-0.5">
+          ${src ? `<button onclick="closeSheet();openRecord('${src.id}')" class="press text-[10px] text-brand">查看来源记录 · ${fmtDate(src.date)}</button>` : ''}
+          <button onclick="copyText(materialStarText('${m.id}'))" class="press text-[10px] text-t3">复制四栏</button>
+        </div>
+      </div>
+    </details>
+    <div class="flex gap-2 mt-2.5">
+      ${m.status === '待确认' ? `<button onclick="confirmMaterial('${m.id}')" class="press flex-1 h-8 bg-brand text-white text-[11px] rounded-md">确认入库</button>` : `<button onclick="copyText(materialText('${m.id}'))" class="press flex-1 h-8 bg-mist text-brand text-[11px] rounded-md">复制简历文案</button>`}
+      <button onclick="editMaterial('${m.id}')" class="press h-8 px-2.5 border border-line rounded-md text-[11px] text-t2">编辑</button>
+      <button onclick="delMaterial('${m.id}')" class="press w-8 h-8 border border-line rounded-md text-t3 text-[12px]">✕</button>
+    </div>
+  </div>`;
+}
+/* 简历文案：把四栏连成一段话，去掉 STAR 字样与互相重复的部分 */
+function _normTxt(s){ return String(s||'').replace(/[，,。；;、：:！!？?\s（）()]/g,''); }
+function overlap(a, b){
+  const x = _normTxt(a), y = _normTxt(b);
+  if(!x || !y) return 0;
+  let best = 0;
+  const row = new Array(y.length + 1).fill(0);
+  for(let i = 1; i <= x.length; i++){
+    let diag = 0;
+    for(let j = 1; j <= y.length; j++){
+      const up = row[j];
+      row[j] = x[i-1] === y[j-1] ? diag + 1 : 0;
+      if(row[j] > best) best = row[j];
+      diag = up;
+    }
+  }
+  return best / Math.min(x.length, y.length);
+}
+function _cleanPart(s){
+  return String(s||'').trim()
+    .replace(/^[（(]?\s*(情境|任务|行动|结果|S|T|A|R)\s*[:：]\s*/i, '')
+    .replace(/[。；;]+$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function resumeLine(m){
+  let s = _cleanPart(m.situation).replace(/^(因为|由于)/, '');
+  let t = _cleanPart(m.task);
+  let a = _cleanPart(m.action);
+  let r = _cleanPart(m.result);
+  const d = _cleanPart(m.data);
+  if(t && a && overlap(t, a) > 0.55) t = '';
+  if(t && s && overlap(s, t) > 0.6) t = '';
+  if(s && a && overlap(s, a) > 0.8) s = '';
+  if(r && a && overlap(r, a) > 0.85) r = '';
+  const seq = [s, t, a, r].filter(Boolean).map(x => x.replace(/^[，,]+|[，,]+$/g, ''));
+  let line = seq.join('，').replace(/，{2,}/g, '，').replace(/^[，,。；;]+|[，,。；;]+$/g, '');
+  if(!line) line = _cleanPart(m.title);
+  line += '。';
+  if(d && !line.includes(d) && overlap(d, line) < 0.6) line = line.replace(/。$/, '') + '，' + d.replace(/[。；;]+$/, '') + '。';
+  return line;
+}
+function materialText(id){
+  const m = DB.materials.find(x => x.id === id);
+  return m ? resumeLine(m) : '';
+}
+function materialStarText(id){
+  const m = DB.materials.find(x => x.id === id);
+  if(!m) return '';
+  const rows = [['S 情境', m.situation], ['T 任务', m.task], ['A 行动', m.action], ['R 结果', m.result], ['数据依据', m.data]]
+    .filter(([, v]) => String(v || '').trim())
+    .map(([k, v]) => k + '：' + v);
+  return [m.title, ...rows].join('\n');
+}
+function shortTitle(task){
+  const t = String(task || '')
+    .replace(/^(导师|领导|老师|主管|客户|甲方|同事|对方)\s*(让我|叫我|要求我|安排我|要我)?/, '')
+    .replace(/^(我|需要|要|负责)/, '')
+    .trim();
+  return (t || task || '未命名素材').slice(0, 22);
+}
+function confirmMaterial(id){
+  const m = DB.materials.find(x => x.id === id);
+  if(!m) return;
+  m.status = '已确认'; m.confirmedAt = new Date().toISOString();
+  saveDB(); refresh(); toast('已确认，进入正式素材库');
+}
+function delMaterial(id){
+  ask('删除这条素材？', '删除后可在回收站恢复。', '删除', () => {
+    const i = DB.materials.findIndex(x => x.id === id);
+    if(i < 0) return;
+    const [m] = DB.materials.splice(i,1);
+    DB.trash.unshift({ id:'t'+uid(), kind:'material', title:m.title, data:m, at:Date.now() });
+    saveDB(); refresh(); toast('已移入回收站');
+  }, true);
+}
+function editMaterial(id){
+  openSub('materialForm', id);
+}
+SUB['materialForm'] = {
+  onOpen(param){ mEditId = param || null; mAbility = mEditId ? [...(DB.materials.find(m => m.id === mEditId)?.ability || [])] : []; },
+  title(){ return mEditId ? '编辑素材' : '新增素材'; },
+  actions(){ return `<button onclick="saveMaterial()" class="press text-[12px] text-brand pr-1">保存</button>`; },
+  body(){
+    const m = mEditId ? DB.materials.find(x => x.id === mEditId) || {} : {};
+    const recs = DB.records.filter(r => r.status === '已完成');
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 space-y-3">
+        ${field('素材标题 *','mtTitle',m.title,'如：电商商标侵权证据整理')}
+        ${field('情境 (S)','mtSituation',m.situation,'背景与限制，可留空')}
+        ${field('任务 (T)','mtTask',m.task,'分给你的目标，动词开头')}
+        ${field('行动 (A)','mtAction',m.action,'你本人做了什么，不写团队')}
+        ${field('结果 (R)','mtResult',m.result,'可验证产出；没有就留空')}
+        ${field('数据依据','mtData',m.data,'如：整理 312 条证据，来自记录原文')}
+        <div>
+          <p class="text-[11px] text-t2 mb-1.5">能力标签</p>
+          <div class="flex flex-wrap gap-1.5">
+            ${ABILITIES.map(a => `<button onclick="toggleAbility('${a}')" class="press text-[10px] px-2 py-1 rounded border ${mAbility.includes(a)?'bg-brand text-white border-brand':'bg-bg text-t2 border-line'}">${a}</button>`).join('')}
+          </div>
+        </div>
+        <div>
+          <p class="text-[11px] text-t2 mb-1">关联记录（可选）</p>
+          <select id="mtRecord" class="w-full h-10 bg-bg rounded-md px-2 text-[12px] outline-none border border-line">
+            <option value="">不关联</option>
+            ${recs.map(r => `<option value="${r.id}" ${m.recordId===r.id?'selected':''}>${fmtDate(r.date)} · ${esc((r.ai&&r.ai.task)||r.summary||'').slice(0,18)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <button onclick="saveMaterial()" class="press w-full h-11 bg-brand text-white text-[13px] font-medium rounded-lg">保存素材</button>
+      <p class="text-center text-[10px] text-t3">新增的素材默认为「待确认」，确认后进入正式素材库</p>
+      ${mEditId ? `<button onclick="deleteMaterialFromForm()" class="press w-full h-10 bg-white border border-line rounded-lg text-[12px] text-[#8C6A64]">删除这条素材</button>` : ''}
+    </div>`;
+  }
+};
+function toggleAbility(a){
+  mAbility = mAbility.includes(a) ? mAbility.filter(x => x !== a) : [...mAbility, a];
+  const btns = document.querySelectorAll('[onclick^="toggleAbility"]');
+  btns.forEach(b => {
+    const v = (b.getAttribute('onclick').match(/'([^']*)'/)||[])[1];
+    const on = mAbility.includes(v);
+    b.classList.toggle('bg-brand', on); b.classList.toggle('text-white', on);
+    b.classList.toggle('border-brand', on); b.classList.toggle('bg-bg', !on);
+    b.classList.toggle('text-t2', !on); b.classList.toggle('border-line', !on);
+  });
+}
+function saveMaterial(){
+  const title = ($('mtTitle').value||'').trim();
+  if(!title){ toast('请填写素材标题'); $('mtTitle').focus(); return; }
+  const data = {
+    title, situation:($('mtSituation').value||'').trim(), task:($('mtTask').value||'').trim(), action:($('mtAction').value||'').trim(),
+    result:($('mtResult').value||'').trim(), data:($('mtData').value||'').trim(),
+    ability:[...mAbility], recordId:$('mtRecord').value
+  };
+  if(mEditId){
+    const m = DB.materials.find(x => x.id === mEditId);
+    if(m) Object.assign(m, data);
+  } else {
+    DB.materials.unshift({ id:uid(), ...data, status:'待确认', createdAt:new Date().toISOString() });
+  }
+  const wasEdit = !!mEditId; mEditId = null;
+  saveDB(); backSub(); refresh(); toast(wasEdit ? '素材已更新' : '素材已添加');
+}
+
+/* =========================================================
+   日志 · 周报 · 月报
+   ========================================================= */
+let rpType = 'week', rpRange = 'week', rpScope = 'confirmed', rpFocus = '';
+SUB['reports'] = {
+  onOpen(){ rpFocus = ''; },
+  title:'日志 · 周报 · 月报',
+  body(){
+    const types = [['day','日志'],['week','周报'],['month','月报']];
+    const ranges = [['today','今天'],['week','本周'],['month','本月'],['all','全部']];
+    return `<div class="p-4">
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 mb-4">
+        <p class="text-[13px] font-medium text-t1 mb-3">生成报告</p>
+        <p class="text-[11px] text-t2 mb-1.5">报告类型</p>
+        <div class="flex gap-2 flex-wrap mb-3">
+          ${types.map(([k,v]) => `<button onclick="rpType='${k}';renderSub()" class="press text-[11px] px-2.5 py-1.5 rounded-md border ${rpType===k?'bg-brand text-white border-brand font-medium':'bg-bg text-t2 border-line'}">${v}</button>`).join('')}
+        </div>
+        <p class="text-[11px] text-t2 mb-1.5">时间范围</p>
+        <div class="flex gap-2 flex-wrap mb-3">
+          ${ranges.map(([k,v]) => `<button onclick="rpRange='${k}';renderSub()" class="press text-[11px] px-2.5 py-1.5 rounded-md border ${rpRange===k?'bg-cloudb text-blueg border-skyb/60 font-medium':'bg-bg text-t2 border-line'}">${v}</button>`).join('')}
+        </div>
+        <p class="text-[11px] text-t2 mb-1.5">汇总范围</p>
+        <div class="flex gap-2 flex-wrap mb-3">
+          ${[['confirmed','仅已确认记录'],['all','全部记录']].map(([k,v]) => `<button onclick="rpScope='${k}';renderSub()" class="press text-[11px] px-2.5 py-1.5 rounded-md border ${rpScope===k?'bg-cloudb text-blueg border-skyb/60 font-medium':'bg-bg text-t2 border-line'}">${v}</button>`).join('')}
+        </div>
+        <p class="text-[11px] text-t2 mb-1.5">自定义重点（可选）</p>
+        <input id="rpFocus" value="${esc(rpFocus)}" oninput="rpFocus=this.value" placeholder="例如：重点突出证据整理与协作" class="w-full h-9 bg-bg rounded-md px-3 text-[12px] outline-none border border-line focus:border-lteal">
+        <button onclick="generateReport()" class="press w-full h-10 bg-brand text-white text-[13px] font-medium rounded-lg mt-4">生成报告草稿</button>
+        <p class="text-[10px] text-t3 text-center mt-2">内容由你的记录拼装，生成后可编辑再保存</p>
+      </div>
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-[13px] font-medium text-t1">我的报告</p>
+        <span class="text-[10px] text-t3">${DB.reports.length} 份</span>
+      </div>
+      ${DB.reports.length ? `<div class="space-y-2">${DB.reports.map(reportRow).join('')}</div>` :
+        emptyBox(I.book,'还没有生成过报告','选择类型与时间范围，AI 会基于真实记录拼出草稿。')}
+    </div>`;
+  }
+};
+function reportRow(r){
+  const label = r.type === 'day' ? '日志' : r.type === 'week' ? '周报' : '月报';
+  return `<div class="bg-card border border-line rounded-xl shadow-card p-3.5">
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] px-1.5 py-0.5 rounded bg-cloudb text-blueg">${label}</span>
+      <p class="text-[13px] text-t1 flex-1 truncate">${esc(r.period)}</p>
+      <span class="text-[10px] text-t3">${r.content.length} 字</span>
+    </div>
+    <p class="text-[10px] text-t3 mt-1.5 line-clamp-3 leading-relaxed">${esc(r.content.slice(0,120))}…</p>
+    <div class="flex gap-2 mt-2.5">
+      <button onclick="viewReport('${r.id}')" class="press flex-1 h-8 bg-mist text-brand text-[11px] rounded-md">查看 / 编辑</button>
+      <button onclick="downloadReport('${r.id}')" class="press h-8 px-2.5 border border-line rounded-md text-[11px] text-t2">下载</button>
+      <button onclick="delReport('${r.id}')" class="press w-8 h-8 border border-line rounded-md text-t3 text-[12px]">✕</button>
+    </div>
+  </div>`;
+}
+function rangeStart(range){
+  const now = new Date();
+  if(range === 'today') return iso();
+  if(range === 'week'){ const d = new Date(now); d.setDate(now.getDate() - ((now.getDay()+6)%7)); return iso(d); }
+  if(range === 'month') return iso(new Date(now.getFullYear(), now.getMonth(), 1));
+  return '0000-01-01';
+}
+function buildReport(type, range, scope, focus){
+  const start = rangeStart(range);
+  const all = DB.records.filter(r => (r.date||'') >= start);
+  let recs = scope === 'confirmed' ? all.filter(r => r.status === '已完成') : all.slice();
+  /* 还没有确认记录时不空转：退回全部记录，并在报告里说明 */
+  let fallback = false;
+  if(!recs.length && all.length){ recs = all.slice(); fallback = true; }
+  if(!recs.length) return null;
+  recs.sort((a,b) => (a.date||'').localeCompare(b.date||'') || (a.time||'').localeCompare(b.time||''));
+  const label = type === 'day' ? '日志' : type === 'week' ? '周报' : '月报';
+  const dates = [...new Set(recs.map(r => r.date))];
+  const period = dates.length === 1 ? fmtDateFull(dates[0])
+    : `${fmtDateFull(dates[0])} — ${fmtDateFull(dates[dates.length-1])}`;
+  const abilities = [...new Set(recs.flatMap(r => (r.ai && r.ai.ability) || []))];
+  const lines = [];
+  lines.push(`【${label}】${period}`);
+  lines.push('');
+  lines.push(type === 'week' ? '一、本周工作' : type === 'month' ? '一、本月工作' : '一、今日记录');
+  let cur = '';
+  recs.forEach(r => {
+    if(r.date !== cur){ cur = r.date; lines.push(''); lines.push(`${fmtDate(cur)} ${weekdayName(cur)}`); }
+    const task = (r.ai && r.ai.task) || r.summary || r.text.slice(0,30);
+    const res = (r.ai && r.ai.result) ? ` ｜ 产出：${r.ai.result}` : '';
+    lines.push(`· ${task}${res}`);
+  });
+  lines.push('');
+  lines.push('二、产出与能力');
+  lines.push(`· 共 ${recs.length} 条${scope === 'confirmed' && !fallback ? '已确认' : fallback ? '（含待确认）' : ''}记录，覆盖 ${dates.length} 个工作日`);
+  if(abilities.length) lines.push(`· 涉及能力：${abilities.join('、')}`);
+  const withResult = recs.filter(r => r.ai && r.ai.result).length;
+  lines.push(`· 有明确产出描述的记录：${withResult} 条`);
+  if(focus) { lines.push(''); lines.push('三、补充说明'); lines.push(`· ${focus}`); }
+  lines.push('');
+  lines.push(type === 'week' ? '四、下周计划' : type === 'month' ? '四、下月计划' : '三、明日计划');
+  lines.push('· （待补充，可自行编辑）');
+  return { period, content: lines.join('\n'), fallback };
+}
+function generateReport(){
+  const built = buildReport(rpType, rpRange, rpScope, rpFocus.trim());
+  if(!built){ toast('该时间范围内没有可用记录'); return; }
+  const label = rpType === 'day' ? '日志' : rpType === 'week' ? '周报' : '月报';
+  const rep = {
+    id: uid(), type: rpType, period: built.period, content: built.content,
+    range: rpRange, scope: rpScope, createdAt: new Date().toISOString(), status: '草稿'
+  };
+  DB.reports.unshift(rep);
+  saveDB();
+  renderSub(); renderTab(currentTab);
+  openReportEditor(rep.id);
+  toast(built.fallback ? '暂无已确认记录，已用全部记录生成' : label + '草稿已生成');
+}
+function openReportEditor(id){
+  const r = DB.reports.find(x => x.id === id);
+  if(!r) return;
+  openSheet('编辑报告草稿', `<div class="p-4">
+    <textarea id="reportText" rows="18" class="w-full bg-card rounded-lg px-3 py-3 text-[12px] leading-relaxed outline-none border border-line focus:border-lteal resize-none">${esc(r.content)}</textarea>
+    <p class="text-[10px] text-t3 mt-2">可直接修改内容，保存后进入「我的报告」。</p>
+  </div>`, `<div class="p-3 flex gap-2">
+    <button onclick="closeSheet()" class="press flex-1 h-10 border border-line bg-white text-[13px] text-t2 rounded-lg">取消</button>
+    <button onclick="saveReportText('${id}')" class="press flex-[1.4] h-10 bg-brand text-white text-[13px] font-medium rounded-lg">保存报告</button>
+  </div>`);
+}
+function saveReportText(id){
+  const r = DB.reports.find(x => x.id === id);
+  const v = ($('reportText').value||'').trim();
+  if(!v){ toast('报告内容不能为空'); return; }
+  r.content = v; r.status = '已保存';
+  saveDB(); closeSheet(); refresh(); toast('报告已保存');
+}
+function viewReport(id){
+  const r = DB.reports.find(x => x.id === id);
+  if(!r) return;
+  openSheet(r.period, `<div class="p-4">
+    <pre class="whitespace-pre-wrap text-[12px] text-t2 leading-relaxed font-sans bg-card border border-line rounded-lg p-3.5">${esc(r.content)}</pre>
+  </div>`, `<div class="p-3 flex gap-2">
+    <button onclick="copyText(DB.reports.find(x=>x.id==='${id}').content)" class="press flex-1 h-10 border border-line bg-white text-[12px] text-t2 rounded-lg">复制全文</button>
+    <button onclick="closeSheet();openReportEditor('${id}')" class="press flex-1 h-10 bg-brand text-white text-[13px] rounded-lg">编辑内容</button>
+  </div>`);
+}
+function delReport(id){
+  ask('删除这份报告？', '删除后可在回收站恢复。', '删除', () => {
+    const i = DB.reports.findIndex(x => x.id === id);
+    if(i < 0) return;
+    const [r] = DB.reports.splice(i,1);
+    DB.trash.unshift({ id:'t'+uid(), kind:'report', title:r.period, data:r, at:Date.now() });
+    saveDB(); refresh(); toast('已移入回收站');
+  }, true);
+}
+function createSummaryReport(){
+  closeSub();
+  openSub('reports');
+  rpType = 'month'; rpRange = 'month'; rpScope = 'all';
+  setTimeout(() => { rpFocus = '成长总结：能力变化与代表性产出'; renderSub(); generateReport(); }, 60);
+}
+
+/* =========================================================
+   面试素材库
+   ========================================================= */
+SUB['interview'] = {
+  title:'面试素材库',
+  actions(){ return `<button onclick="openSub('jdForm')" class="press w-8 h-8 flex items-center justify-center text-brand text-[20px] leading-none">+</button>`; },
+  body(){
+    return `<div class="p-4">
+      <div class="bg-palteal border border-skyb/30 rounded-xl p-3.5 mb-3">
+        <p class="text-[12px] font-medium text-t1">按岗位准备，而不是背模板</p>
+        <p class="text-[10px] text-teal mt-1 leading-relaxed">粘贴 JD 后，会从你的真实记录里找匹配经历，并给出预判追问；回答提纲由你填写。</p>
+      </div>
+      ${DB.interviews.length ? `<div class="space-y-3">${DB.interviews.map(interviewCard).join('')}</div>` :
+        emptyBox(I.brief,'还没有目标岗位','添加一个岗位 JD，AI 会从你的记录中匹配相关经历。','添加岗位 JD',"openSub('jdForm')")}
+    </div>`;
+  }
+};
+function bigrams(s){
+  const t = String(s).replace(/[^\u4e00-\u9fa5a-zA-Z]/g,'');
+  const set = new Set();
+  for(let i = 0; i < t.length - 1; i++) set.add(t.slice(i,i+2));
+  return [...set];
+}
+function interviewMatch(iv){
+  const jdSet = new Set(bigrams(iv.jd + ' ' + iv.role));
+  const scored = DB.records.map(r => {
+    const txt = [r.text, r.ai && r.ai.task, r.ai && r.ai.result, (r.tags||[]).join(' ')].filter(Boolean).join(' ');
+    const recSet = new Set(bigrams(txt));
+    let hit = 0; jdSet.forEach(g => { if(recSet.has(g)) hit++; });
+    return { r, hit };
+  }).filter(x => x.hit > 0).sort((a,b) => b.hit - a.hit);
+  const denom = Math.max(15, Math.min(80, Math.round(jdSet.size * 0.18)));
+  const score = scored.length ? Math.min(96, Math.round(Math.min(1, scored[0].hit / denom) * 100)) : 0;
+  return { score, top: scored.slice(0,3).map(x => x.r) };
+}
+function interviewCard(iv){
+  const { score, top } = interviewMatch(iv);
+  return `<div class="bg-card border border-line rounded-xl shadow-card p-4">
+    <div class="flex items-start gap-3">
+      <div class="flex-1 min-w-0">
+        <p class="text-[13px] font-medium text-t1 truncate">${esc(iv.company||'未填写公司')}</p>
+        <p class="text-[11px] text-t3 mt-0.5 truncate">${esc(iv.role||'未填写岗位')} · ${fmtDate(iv.createdAt.slice(0,10))}</p>
+      </div>
+      <div class="text-right shrink-0">
+        <p class="text-[18px] font-semibold ${score>=60?'text-brand':score>=30?'text-[#2F7F8C]':'text-t3'} leading-none">${score}<span class="text-[10px] font-normal">%</span></p>
+        <p class="text-[9px] text-t3 mt-0.5">经历匹配</p>
+      </div>
+    </div>
+    <div class="mt-2.5 h-1.5 bg-subbg rounded-full overflow-hidden"><div class="h-full bg-brand rounded-full" style="width:${score}%"></div></div>
+    <details class="mt-2.5">
+      <summary class="text-[11px] text-brand">查看匹配经历与预判问题</summary>
+      <div class="mt-2 space-y-2">
+        <div class="bg-bg rounded-md p-2.5">
+          <p class="text-[10px] text-t3 mb-1">匹配到的记录（${top.length}）</p>
+          ${top.length ? top.map(r => `<button onclick="closeSheet();openRecord('${r.id}')" class="press block text-left text-[11px] text-t2 py-0.5 truncate w-full">· ${esc((r.ai&&r.ai.task)||r.summary||r.text.slice(0,20))}</button>`).join('') : '<p class="text-[10px] text-t3">暂无匹配，先多记录一些相关工作</p>'}
+        </div>
+        <div class="bg-bg rounded-md p-2.5">
+          <p class="text-[10px] text-t3 mb-1">预判追问</p>
+          <ol class="list-decimal pl-4 space-y-1">${(iv.questions||[]).map(q => `<li class="text-[11px] text-t2 leading-relaxed">${esc(q)}</li>`).join('')}</ol>
+        </div>
+        <div>
+          <p class="text-[10px] text-t3 mb-1">我的回答提纲</p>
+          <textarea id="ans_${iv.id}" rows="4" placeholder="用 STAR 写下你的回答要点…" class="w-full bg-bg rounded-md px-2.5 py-2 text-[11px] leading-relaxed outline-none border border-line focus:border-lteal resize-none">${esc(iv.answer||'')}</textarea>
+          <button onclick="saveAnswer('${iv.id}')" class="press mt-1.5 h-7 px-3 bg-mist text-brand text-[10px] rounded">保存提纲</button>
+        </div>
+      </div>
+    </details>
+    <div class="flex gap-2 mt-2.5">
+      <button onclick="copyText(interviewText('${iv.id}'))" class="press flex-1 h-8 bg-mist text-brand text-[11px] rounded-md">复制 JD 与提纲</button>
+      <button onclick="openSub('jdForm','${iv.id}')" class="press h-8 px-2.5 border border-line rounded-md text-[11px] text-t2">编辑</button>
+      <button onclick="delInterview('${iv.id}')" class="press w-8 h-8 border border-line rounded-md text-t3 text-[12px]">✕</button>
+    </div>
+  </div>`;
+}
+function interviewText(id){
+  const iv = DB.interviews.find(x => x.id === id);
+  if(!iv) return '';
+  return [`${iv.company} ${iv.role}`, '', 'JD：', iv.jd, '', '预判问题：', ...(iv.questions||[]).map((q,i) => `${i+1}. ${q}`), '', '我的回答提纲：', iv.answer || '（未填写）'].join('\n');
+}
+let jdEditId = null;
+SUB['jdForm'] = {
+  onOpen(param){ jdEditId = param || null; },
+  title(){ return jdEditId ? '编辑岗位 JD' : '添加岗位 JD'; },
+  actions(){ return `<button onclick="saveJD()" class="press text-[12px] text-brand pr-1">保存</button>`; },
+  body(){
+    const iv = jdEditId ? DB.interviews.find(x => x.id === jdEditId) || {} : {};
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 space-y-3">
+        ${field('公司','jdCompany',iv.company,'如：XX 律师事务所')}
+        ${field('岗位','jdRole',iv.role,'如：知识产权实习生')}
+        <div>
+          <p class="text-[11px] text-t2 mb-1">岗位 JD</p>
+          <textarea id="jdText" rows="9" placeholder="把招聘要求粘贴到这里…" class="w-full bg-bg rounded-md px-3 py-2 text-[12px] leading-relaxed outline-none border border-line focus:border-lteal resize-none">${esc(iv.jd||'')}</textarea>
+        </div>
+      </div>
+      <button onclick="saveJD()" class="press w-full h-11 bg-brand text-white text-[13px] font-medium rounded-lg">${jdEditId?'保存修改':'保存并匹配经历'}</button>
+      <p class="text-center text-[10px] text-t3">匹配基于你已录入的记录文本，不会编造经历</p>
+    </div>`;
+  }
+};
+function saveJD(){
+  const jd = ($('jdText').value||'').trim();
+  if(!jd){ toast('请粘贴岗位 JD'); $('jdText').focus(); return; }
+  const company = ($('jdCompany').value||'').trim();
+  const role = ($('jdRole').value||'').trim();
+  if(!company && !role){ toast('请至少填写公司或岗位'); return; }
+  const questions = [
+    `请介绍一段你在${role || '相关岗位'}中最有代表性的经历，具体做了什么？`,
+    '这段经历里你遇到的最大困难是什么？怎么解决的？',
+    '如果重做一次，你会怎么改进？',
+    company ? `你为什么想加入${company}？` : '你为什么想做这个岗位？',
+    '你如何保证交付内容的准确性？'
+  ];
+  if(jdEditId){
+    const iv = DB.interviews.find(x => x.id === jdEditId);
+    if(iv){ iv.company = company; iv.role = role; iv.jd = jd; iv.questions = questions; }
+  } else {
+    DB.interviews.unshift({ id:uid(), company, role, jd, questions, answer:'', createdAt:new Date().toISOString() });
+  }
+  const wasEdit = !!jdEditId; jdEditId = null;
+  saveDB(); backSub(); refresh(); toast(wasEdit ? '岗位信息已更新' : '已保存，展开可查看匹配结果');
+}
+function saveAnswer(id){
+  const iv = DB.interviews.find(x => x.id === id);
+  const ta = $('ans_' + id);
+  if(!iv || !ta) return;
+  iv.answer = ta.value.trim();
+  saveDB(); toast('回答提纲已保存');
+}
+function delInterview(id){
+  ask('删除这个岗位？', 'JD 与回答提纲都会被删除。', '删除', () => {
+    DB.interviews = DB.interviews.filter(x => x.id !== id);
+    saveDB(); refresh(); toast('已删除');
+  }, true);
+}
+
+/* =========================================================
+   个人知识库
+   ========================================================= */
+let kbSearch = '', kbCat = '全部';
+const KB_CATS = ['法律法规','专业知识','工作流程','工作方法','案例分析','学习笔记','经验总结','灵感与待办'];
+SUB['knowledge'] = {
+  onOpen(){ kbSearch = ''; kbCat = '全部'; },
+  title:'个人知识库',
+  actions(){ return `<button onclick="editKnowledge(null)" class="press w-8 h-8 flex items-center justify-center text-brand text-[20px] leading-none">+</button>`; },
+  body(){
+    return `<div class="p-4">
+      <div class="relative mb-3">
+        <input id="kbSearch" value="${esc(kbSearch)}" oninput="kbSearch=this.value;renderKbList()" placeholder="搜索标题、内容、标签…" class="w-full h-10 bg-card rounded-md pl-9 pr-3 text-[13px] outline-none border border-line focus:border-lteal">
+        <svg class="w-4 h-4 text-t3 absolute left-3 top-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-3.5-3.5"/></svg>
+      </div>
+      <div class="flex gap-1.5 overflow-x-auto pb-2.5">
+        ${['全部', ...KB_CATS].map(c => `<button onclick="kbCat='${c}';renderKbList()" class="press whitespace-nowrap text-[10px] px-2 py-1 rounded-full border ${kbCat===c?'bg-brand text-white border-brand':'bg-card text-t3 border-line'}">${c}</button>`).join('')}
+      </div>
+      <div id="kbList"></div>
+    </div>`;
+  },
+  after(){ renderKbList(); }
+};
+function renderKbList(){
+  const box = $('kbList');
+  if(!box) return;
+  let list = DB.knowledge.slice();
+  if(kbCat !== '全部') list = list.filter(k => k.cat === kbCat);
+  const kw = kbSearch.trim().toLowerCase();
+  if(kw) list = list.filter(k => (k.title + k.body + (k.tags||[]).join('')).toLowerCase().includes(kw));
+  if(!list.length){
+    box.innerHTML = `<div class="mt-3">${emptyBox(I.book, DB.knowledge.length ? '没有匹配的条目' : '知识库还是空的', DB.knowledge.length ? '换个关键词或分类试试。' : '确认记录时勾选「存入知识库」，或手动新增一条。', DB.knowledge.length ? '' : '新增条目', "editKnowledge(null)")}</div>`;
+    return;
+  }
+  box.innerHTML = `<div class="space-y-2 mt-1">${list.map(knowledgeCard).join('')}</div>
+    <p class="text-center text-[10px] text-t3 mt-4">共 ${list.length} 条 · 均来自你的记录或手动录入</p>`;
+}
+function knowledgeCard(k){
+  return `<div onclick="openKnowledge('${k.id}')" class="press bg-card border border-line rounded-xl shadow-card p-3.5">
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] bg-lakeb text-[#3C6B7F] px-1.5 py-0.5 rounded whitespace-nowrap">${esc(k.cat)}</span>
+      <span class="text-[10px] text-t3 ml-auto">${fmtDate(k.source || (k.createdAt||'').slice(0,10))}</span>
+    </div>
+    <p class="text-[13px] text-t1 mt-1.5 leading-snug">${esc(k.title)}</p>
+    <p class="text-[11px] text-t3 mt-1 line-clamp-3 leading-relaxed">${esc(k.body)}</p>
+    ${(k.tags||[]).length ? `<div class="flex gap-1.5 flex-wrap mt-2">${k.tags.map(t => `<span class="text-[10px] text-t3 bg-subbg px-1.5 py-0.5 rounded"># ${esc(t)}</span>`).join('')}</div>` : ''}
+  </div>`;
+}
+function openKnowledge(id){
+  const k = DB.knowledge.find(x => x.id === id);
+  if(!k) return;
+  const src = DB.records.find(r => r.id === k.recordId);
+  openSheet('知识条目', `<div class="p-4">
+    <span class="text-[10px] bg-lakeb text-[#3C6B7F] px-1.5 py-0.5 rounded">${esc(k.cat)}</span>
+    <p class="text-[16px] font-semibold text-t1 mt-2 leading-snug">${esc(k.title)}</p>
+    <pre class="whitespace-pre-wrap font-sans text-[12px] text-t2 leading-relaxed mt-3 bg-card border border-line rounded-lg p-3">${esc(k.body)}</pre>
+    <div class="flex items-center gap-2 mt-2 flex-wrap">
+      ${(k.tags||[]).map(t => `<span class="text-[10px] text-t3 bg-subbg px-1.5 py-0.5 rounded"># ${esc(t)}</span>`).join('')}
+    </div>
+    ${src ? `<button onclick="closeSheet();openRecord('${src.id}')" class="press text-[11px] text-brand mt-3">查看来源记录 · ${fmtDate(src.date)}</button>` : ''}
+  </div>`, `<div class="p-3 flex gap-2">
+    <button onclick="delKnowledge('${id}')" class="press w-10 h-10 border border-line rounded-lg text-t3 text-[12px]">✕</button>
+    <button onclick="closeSheet();editKnowledge('${id}')" class="press flex-1 h-10 bg-brand text-white text-[13px] rounded-lg">编辑条目</button>
+  </div>`);
+}
+let kbEditId = null;
+function editKnowledge(id){
+  kbEditId = id;
+  const k = id ? DB.knowledge.find(x => x.id === id) || {} : {};
+  openSheet(id ? '编辑知识条目' : '新增知识条目', `<div class="p-4 space-y-3">
+    <div><p class="text-[11px] text-t2 mb-1">分类</p>
+      <select id="kbCatInput" class="w-full h-10 bg-card rounded-md px-2 text-[12px] outline-none border border-line">
+        ${KB_CATS.map(c => `<option value="${c}" ${k.cat===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    ${field('标题 *','kbTitle',k.title,'一句话概括这条知识')}
+    <div><p class="text-[11px] text-t2 mb-1">内容</p>
+      <textarea id="kbBody" rows="6" placeholder="记录方法、结论、法条要点…" class="w-full bg-card rounded-md px-3 py-2 text-[12px] leading-relaxed outline-none border border-line focus:border-lteal resize-none">${esc(k.body||'')}</textarea>
+    </div>
+    ${field('标签（逗号分隔）','kbTags',(k.tags||[]).join('，'),'如：商标，证据')}
+  </div>`, `<div class="p-3"><button onclick="saveKnowledge()" class="press w-full h-10 bg-brand text-white text-[13px] font-medium rounded-lg">保存条目</button></div>`);
+}
+function saveKnowledge(){
+  const title = ($('kbTitle').value||'').trim();
+  const body = ($('kbBody').value||'').trim();
+  if(!title){ toast('请填写标题'); $('kbTitle').focus(); return; }
+  if(!body){ toast('请填写内容'); $('kbBody').focus(); return; }
+  const tags = ($('kbTags').value||'').split(/[，,、\s]+/).map(x => x.trim()).filter(Boolean);
+  const data = { cat:$('kbCatInput').value, title, body, tags, source: iso() };
+  if(kbEditId){
+    const k = DB.knowledge.find(x => x.id === kbEditId);
+    if(k) Object.assign(k, data);
+  } else {
+    DB.knowledge.unshift({ id:uid(), ...data, createdAt:new Date().toISOString() });
+  }
+  const wasEdit = !!kbEditId; kbEditId = null;
+  saveDB(); closeSheet(); refresh(); toast(wasEdit ? '知识条目已更新' : '已新增知识条目');
+}
+function delKnowledge(id){
+  ask('删除这条知识？', '删除后可在回收站恢复。', '删除', () => {
+    const i = DB.knowledge.findIndex(x => x.id === id);
+    if(i < 0) return;
+    const [k] = DB.knowledge.splice(i,1);
+    DB.trash.unshift({ id:'t'+uid(), kind:'knowledge', title:k.title, data:k, at:Date.now() });
+    saveDB(); closeSheet(); refresh(); toast('已移入回收站');
+  }, true);
+}
+</script>
+
+<script>
+/* =========================================================
+   设置：隐私 / AI 偏好 / 提醒
+   ========================================================= */
+SUB['privacy'] = {
+  title:'隐私与可见性',
+  body(){
+    const opts = ['仅自己可见','导出后自行公开','匿名参与社区（预留）'];
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card overflow-hidden divide-y divide-line">
+        ${opts.map(o => `<button onclick="setPrivacy('${o}')" class="press w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <span class="flex-1">
+            <span class="block text-[13px] ${DB.settings.privacy===o?'text-brand font-medium':'text-t1'}">${o}</span>
+            <span class="block text-[10px] text-t3 mt-0.5">${o==='仅自己可见'?'默认设置，任何内容都不会公开':o==='导出后自行公开'?'仅生成导出文件，由你自己决定是否发布':'社区功能尚未开放，此选项仅记录偏好'}</span>
+          </span>
+          <span class="w-4 h-4 rounded-full border ${DB.settings.privacy===o?'border-brand bg-brand':'border-line'} flex items-center justify-center">
+            ${DB.settings.privacy===o?'<span class="w-1.5 h-1.5 rounded-full bg-white"></span>':''}
+          </span>
+        </button>`).join('')}
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 text-[11px] text-t2 leading-relaxed space-y-2">
+        <p class="text-[12px] font-medium text-t1">数据说明</p>
+        <p>本页面是纯前端原型：所有数据写入浏览器 localStorage，不会上传服务器，也没有账号体系。</p>
+        <p>清除浏览器数据或更换设备后，内容将无法恢复，建议定期在「数据管理」导出备份。</p>
+        <p>AI 整理在你本机按规则完成，不调用外部接口。</p>
+      </div>
+    </div>`;
+  }
+};
+function setPrivacy(v){ DB.settings.privacy = v; saveDB(); renderSub(); renderTab(currentTab); toast('隐私设置已更新'); }
+
+SUB['tone'] = {
+  title:'AI 整理偏好',
+  body(){
+    const opts = [['简洁','只提炼任务与成果，追问最少'],['平衡（忠于记录）','按事实整理，缺信息时追问'],['详细（多追问）','尽量补全 STAR，多问几个问题']];
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card overflow-hidden divide-y divide-line">
+        ${opts.map(([o,d]) => `<button onclick="setTone('${o}')" class="press w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <span class="flex-1">
+            <span class="block text-[13px] ${DB.settings.tone===o?'text-brand font-medium':'text-t1'}">${o}</span>
+            <span class="block text-[10px] text-t3 mt-0.5">${d}</span>
+          </span>
+          <span class="w-4 h-4 rounded-full border ${DB.settings.tone===o?'border-brand bg-brand':'border-line'} flex items-center justify-center">
+            ${DB.settings.tone===o?'<span class="w-1.5 h-1.5 rounded-full bg-white"></span>':''}
+          </span>
+        </button>`).join('')}
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-2">
+          <span class="flex-1">
+            <span class="block text-[12px] text-t1">确认后才沉淀</span>
+            <span class="block text-[10px] text-t3 mt-0.5">AI 结果必须经你确认才进入素材库</span>
+          </span>
+          <button onclick="toggleSetting('confirmFirst')" class="sw ${DB.settings.confirmFirst?'on':'off'}"><i></i></button>
+        </div>
+      </div>
+      <p class="text-[10px] text-t3 text-center leading-relaxed">偏好只影响整理结果的呈现方式，不会改变原始记录</p>
+    </div>`;
+  }
+};
+function setTone(v){ DB.settings.tone = v; saveDB(); renderSub(); renderTab(currentTab); toast('AI 偏好已更新'); }
+
+SUB['remind'] = {
+  title:'提醒设置',
+  body(){
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card divide-y divide-line">
+        ${toggleRow('每日记录提醒','提醒你当天记一笔','remind')}
+        ${toggleRow('周报生成提醒','每周五提示生成本周周报','weekly')}
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <p class="text-[12px] font-medium text-t1">提醒说明</p>
+        <p class="text-[10px] text-t3 mt-1.5 leading-relaxed">纯网页版无法发送系统推送，这里的开关只保存你的偏好。接入小程序后才会真正推送通知。</p>
+      </div>
+      <button onclick="resetRemind()" class="press w-full h-10 bg-white border border-line text-[12px] text-t2 rounded-lg">恢复默认提醒设置</button>
+      <p class="text-[10px] text-t3 text-center">开关变更会立即保存</p>
+    </div>`;
+  }
+};
+function toggleRow(title, sub, key){
+  const on = !!DB.settings[key];
+  return `<div class="flex items-center gap-3 px-4 py-3.5">
+    <span class="flex-1">
+      <span class="block text-[13px] text-t1">${esc(title)}</span>
+      <span class="block text-[10px] text-t3 mt-0.5">${esc(sub)}</span>
+    </span>
+    <button onclick="toggleSetting('${key}')" class="sw ${on?'on':'off'}"><i></i></button>
+  </div>`;
+}
+function toggleSetting(key){
+  DB.settings[key] = !DB.settings[key];
+  saveDB();
+  if(currentSub === 'remind' || currentSub === 'tone') renderSub();
+  renderTab(currentTab);
+  toast(DB.settings[key] ? '已开启' : '已关闭');
+}
+
+/* =========================================================
+   数据管理：导出 / 导入 / 清除
+   ========================================================= */
+function download(name, content, mime){
+  const blob = new Blob([content], { type: mime || 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+function buildMarkdown(){
+  const p = DB.profile;
+  const L = [];
+  L.push(`# ${p.name || '我'}的实习成长档案`);
+  L.push('');
+  L.push('## 一、个人信息');
+  const rows = [['姓名',p.name],['学校',p.school],['专业',p.major],['学历',p.degree],['毕业年份',p.grad],['城市',p.city],['邮箱',p.email],['电话',p.phone],['求职方向',p.target]];
+  rows.filter(r => r[1]).forEach(([k,v]) => L.push(`- ${k}：${v}`));
+  if((p.skills||[]).length) L.push(`- 技能：${p.skills.join('、')}`);
+  if(p.bio) L.push(`- 简介：${p.bio}`);
+  L.push('');
+  L.push('## 二、实习档案');
+  if(!DB.internships.length) L.push('（暂无）');
+  DB.internships.forEach(i => {
+    L.push(`### ${i.company}${i.dept?' · '+i.dept:''}`);
+    L.push(`- 岗位：${i.role || '未填写'}`);
+    L.push(`- 时间：${i.start || '—'} 至 ${i.end || '—'}（${i.status}）`);
+    if(i.weekly) L.push(`- 每周出勤：${i.weekly}`);
+    if(i.mentor) L.push(`- 指导人：${i.mentor}`);
+    if(i.note) L.push(`- 备注：${i.note}`);
+    L.push('');
+  });
+  L.push('## 三、工作记录');
+  if(!DB.records.length) L.push('（暂无）');
+  DB.records.forEach(r => {
+    L.push(`### ${fmtDateFull(r.date)} ${weekdayName(r.date)} ${r.time || ''} · ${r.type}（${r.status}）`);
+    L.push(r.text);
+    if(r.ai && r.ai.result) L.push(`- 整理成果：${r.ai.result}`);
+    L.push('');
+  });
+  L.push('## 四、简历素材');
+  if(!DB.materials.length) L.push('（暂无）');
+  DB.materials.forEach(m => {
+    L.push(`### ${m.title}（${m.status}）`);
+    if(m.situation) L.push(`- 情境：${m.situation}`);
+    if(m.task) L.push(`- 任务：${m.task}`);
+    if(m.action) L.push(`- 行动：${m.action}`);
+    if(m.result) L.push(`- 结果：${m.result}`);
+    if(m.data) L.push(`- 数据依据：${m.data}`);
+    if((m.ability||[]).length) L.push(`- 能力：${m.ability.join('、')}`);
+    L.push('');
+  });
+  L.push('## 五、报告');
+  if(!DB.reports.length) L.push('（暂无）');
+  DB.reports.forEach(r => { L.push(`### ${r.period}`); L.push('```'); L.push(r.content); L.push('```'); L.push(''); });
+  L.push('## 六、知识库');
+  if(!DB.knowledge.length) L.push('（暂无）');
+  DB.knowledge.forEach(k => { L.push(`### [${k.cat}] ${k.title}`); L.push(k.body); L.push(''); });
+  return L.join('\n');
+}
+function exportMarkdown(){
+  download(`实习成长档案-${iso()}.md`, buildMarkdown(), 'text/markdown;charset=utf-8');
+  toast('Markdown 已开始下载');
+}
+function exportWord(){
+  const md = buildMarkdown()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/^### (.*)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.*)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.*)$/gm,'<h1>$1</h1>')
+    .replace(/^- (.*)$/gm,'<p>· $1</p>')
+    .replace(/\n/g,'<br>');
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>实习成长档案</title>
+  <style>body{font-family:"Microsoft YaHei",sans-serif;line-height:1.8;font-size:14px;color:#1E302E}h1{font-size:22px}h2{font-size:17px;margin-top:20px}h3{font-size:15px}</style></head><body>${md}</body></html>`;
+  download(`实习成长档案-${iso()}.doc`, html, 'application/msword');
+  toast('Word 文档已开始下载');
+}
+function exportJSON(){
+  download(`实习助手数据备份-${iso()}.json`, JSON.stringify(DB, null, 2), 'application/json');
+  toast('备份文件已开始下载');
+}
+SUB['data'] = {
+  title:'数据管理',
+  body(){
+    const size = new Blob([JSON.stringify(DB)]).size;
+    const kb = (size/1024).toFixed(1);
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <p class="text-[13px] font-medium text-t1">本机数据</p>
+        <div class="grid grid-cols-3 gap-2 mt-3">
+          ${statTile('记录', DB.records.length, '条')}
+          ${statTile('素材', DB.materials.length, '条')}
+          ${statTile('占用', kb, 'KB')}
+        </div>
+        <p class="text-[10px] text-t3 mt-2.5 leading-relaxed">存储于当前浏览器的 localStorage，键名 <span class="text-t2">aiintern.v2</span>。清除浏览器数据会一并删除。</p>
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 space-y-2">
+        <p class="text-[13px] font-medium text-t1 mb-1">导出</p>
+        <button onclick="exportJSON()" class="press w-full h-10 bg-brand text-white text-[12px] rounded-md">导出完整备份（JSON）</button>
+        <button onclick="exportMarkdown()" class="press w-full h-10 bg-mist text-brand text-[12px] rounded-md">导出可读档案（Markdown）</button>
+        <button onclick="exportWord()" class="press w-full h-10 bg-mist text-brand text-[12px] rounded-md">导出 Word 文档（.doc）</button>
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <p class="text-[13px] font-medium text-t1 mb-1">导入备份</p>
+        <p class="text-[10px] text-t3 mb-2.5 leading-relaxed">选择之前导出的 JSON 备份，导入会覆盖当前全部数据。</p>
+        <input type="file" id="importFile" accept=".json,application/json" class="hidden" onchange="importData(this)">
+        <button onclick="$('importFile').click()" class="press w-full h-10 bg-bg border border-line text-[12px] text-t2 rounded-md">选择备份文件</button>
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <p class="text-[13px] font-medium text-t1 mb-1">危险操作</p>
+        <button onclick="clearAll()" class="press w-full h-10 bg-[#F4EFEE] text-[#8C6A64] text-[12px] rounded-md">清除全部本机数据</button>
+      </div>
+    </div>`;
+  }
+};
+function importData(input){
+  const f = input.files && input.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let d = null;
+    try { d = JSON.parse(String(reader.result)); } catch(e) { toast('文件不是有效的 JSON'); return; }
+    if(!d || typeof d !== 'object' || !('profile' in d) || !('records' in d)){ toast('这不是本应用的备份文件'); return; }
+    ask('导入并覆盖数据？', '当前本机的资料、记录、素材将被备份文件替换，操作不可撤销。', '确认导入', () => {
+      const b = blankDB();
+      const arr = k => Array.isArray(d[k]) ? d[k] : [];
+      DB = {
+        ...b, ...d,
+        profile:{ ...b.profile, ...(d.profile||{}) },
+        settings:{ ...b.settings, ...(d.settings||{}) },
+        internships:arr('internships'), records:arr('records'), materials:arr('materials'),
+        knowledge:arr('knowledge'), reports:arr('reports'), interviews:arr('interviews'),
+        trash:arr('trash'), chat:arr('chat')
+      };
+      saveDB(); closeSub(); switchTab('home'); renderNavBadge();
+      toast('数据已导入');
+    });
+  };
+  reader.readAsText(f);
+  input.value = '';
+}
+
+/* =========================================================
+   回收站
+   ========================================================= */
+const TRASH_MAP = { record:'records', material:'materials', report:'reports', knowledge:'knowledge', interview:'interviews' };
+const TRASH_NAME = { record:'记录', material:'素材', report:'报告', knowledge:'知识', interview:'岗位' };
+SUB['trash'] = {
+  title:'回收站',
+  actions(){ return DB.trash.length ? `<button onclick="emptyTrash()" class="press text-[11px] text-[#8C6A64] whitespace-nowrap pr-1">清空</button>` : ''; },
+  body(){
+    if(!DB.trash.length) return `<div class="p-4">${emptyBox(I.doc,'回收站是空的','删除的内容会先放到这里，30 天内可恢复。')}</div>`;
+    return `<div class="p-4">
+      <p class="text-[10px] text-t3 mb-3">删除的内容可在这里恢复，恢复后回到原来的位置。</p>
+      <div class="space-y-2">
+        ${DB.trash.map(t => `<div class="bg-card border border-line rounded-xl shadow-card p-3.5">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] bg-subbg text-t3 px-1.5 py-0.5 rounded">${esc(TRASH_NAME[t.kind]||'内容')}</span>
+            <p class="text-[12px] text-t1 flex-1 truncate">${esc(t.title || '未命名')}</p>
+            <span class="text-[10px] text-t3">${fmtDate(t.data.date || (t.data.createdAt||'').slice(0,10))}</span>
+          </div>
+          <div class="flex gap-2 mt-2.5">
+            <button onclick="restoreTrash('${t.id}')" class="press flex-1 h-8 bg-mist text-brand text-[11px] rounded-md">恢复</button>
+            <button onclick="purgeTrash('${t.id}')" class="press flex-1 h-8 border border-line text-[11px] text-t3 rounded-md">彻底删除</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+};
+function restoreTrash(tid){
+  const i = DB.trash.findIndex(x => x.id === tid);
+  if(i < 0) return;
+  const t = DB.trash[i];
+  const key = TRASH_MAP[t.kind];
+  if(key && Array.isArray(DB[key])){
+    if(!DB[key].some(x => x.id === t.data.id)) DB[key].unshift(t.data);
+  }
+  DB.trash.splice(i,1);
+  saveDB(); refresh(); toast('已恢复');
+}
+function purgeTrash(tid){
+  ask('彻底删除？', '删除后无法恢复。', '彻底删除', () => {
+    DB.trash = DB.trash.filter(x => x.id !== tid);
+    saveDB(); refresh(); toast('已彻底删除');
+  }, true);
+}
+function emptyTrash(){
+  ask('清空回收站？', `将永久删除 ${DB.trash.length} 项内容，无法恢复。`, '清空', () => {
+    DB.trash = []; saveDB(); refresh(); toast('回收站已清空');
+  }, true);
+}
+
+/* =========================================================
+   关于与隐私政策
+   ========================================================= */
+SUB['about'] = {
+  title:'关于与隐私政策',
+  body(){
+    return `<div class="p-4 space-y-3">
+      <div class="bg-card border border-line rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-mist text-brand flex items-center justify-center">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8L12 3z"/></svg>
+          </div>
+          <div>
+            <p class="text-[14px] font-medium text-t1">AI 实习成长助手</p>
+            <p class="text-[10px] text-t3 mt-0.5">网页原型 v2.0 · 纯前端 · 本地存储</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-card border border-line rounded-xl shadow-card p-4 text-[11px] text-t2 leading-relaxed space-y-3">
+        <p class="text-[12px] font-medium text-t1">一、数据存储</p>
+        <p>本页面没有账号体系，无需注册登录。你填写的个人信息、实习档案、记录、素材与报告，全部保存在当前浏览器的 localStorage 中，不会上传到任何服务器，也不会被其他人看到。</p>
+        <p class="text-[12px] font-medium text-t1">二、AI 处理方式</p>
+        <p>页面中的「AI 整理」由本地规则完成：从你的原始记录中提取任务、成果与能力关键词，信息缺失时会追问而不是编造。原始记录始终保留，AI 结果需要你确认后才会进入素材库。</p>
+        <p class="text-[12px] font-medium text-t1">三、你的控制权</p>
+        <p>你可以随时查看、编辑、导出、删除任何内容。删除的记录进入回收站，可恢复；「数据管理」提供 JSON 备份、Markdown / Word 导出与一键清除。</p>
+        <p class="text-[12px] font-medium text-t1">四、隐私提醒</p>
+        <p>请避免在记录中填写客户真实姓名、未公开合同金额等敏感信息。若需把内容写入简历或对外分享，请先自行脱敏。</p>
+        <p class="text-[12px] font-medium text-t1">五、限制说明</p>
+        <p>清除浏览器缓存、切换设备或使用无痕模式，数据都不会保留。建议定期导出备份。</p>
+      </div>
+      <button onclick="exportJSON()" class="press w-full h-10 bg-bg border border-line text-[12px] text-t2 rounded-lg">导出备份</button>
+    </div>`;
+  }
+};
+
+/* =========================================================
+   AI 助手（基于真实数据的规则回复）
+   ========================================================= */
+function openAI(){
+  $('aiHost').classList.remove('hidden');
+  renderChips();
+  renderChat();
+}
+function closeAI(){ $('aiHost').classList.add('hidden'); }
+function renderChips(){
+  const chips = ['整理我的记录','生成本周周报','提炼简历素材','我该补什么','成长总结'];
+  $('aiChips').innerHTML = chips.map(c => `<button onclick="sendChat('${c}')" class="press whitespace-nowrap text-[11px] text-teal bg-palteal px-2.5 py-1.5 rounded-full">${c}</button>`).join('');
+}
+function renderChat(){
+  const list = $('chatList');
+  if(!DB.chat.length){
+    list.innerHTML = `<div class="bg-white border border-line rounded-xl p-4">
+      <p class="text-[13px] font-medium text-t1">你好，我是你的实习助手</p>
+      <p class="text-[11px] text-t2 mt-1.5 leading-relaxed">我只基于你自己录入的内容回答，不会编造经历。你可以让我：</p>
+      <ul class="text-[11px] text-t2 mt-1.5 space-y-1">
+        <li>· 整理待确认的记录</li>
+        <li>· 用本周记录生成周报</li>
+        <li>· 从已确认素材里提炼简历文案</li>
+        <li>· 指出你资料里还缺什么</li>
+      </ul>
+    </div>`;
+    return;
+  }
+  list.innerHTML = DB.chat.map(m => {
+    if(m.role === 'user'){
+      return `<div class="flex justify-end"><div class="max-w-[80%] bg-brand text-white text-[12px] leading-relaxed px-3 py-2 rounded-2xl rounded-br-sm">${esc(m.text)}</div></div>`;
+    }
+    return `<div class="flex gap-2">
+      <span class="w-6 h-6 rounded-lg bg-mist text-brand flex items-center justify-center shrink-0 text-[11px]">AI</span>
+      <div class="max-w-[82%]">
+        <div class="bg-white border border-line text-[12px] text-t2 leading-relaxed px-3 py-2.5 rounded-2xl rounded-tl-sm whitespace-pre-wrap">${esc(m.text)}</div>
+        ${(m.actions||[]).length ? `<div class="flex gap-1.5 flex-wrap mt-1.5">${m.actions.map(a => `<button onclick="aiAction('${a.act}')" class="press text-[10px] text-brand bg-mist px-2 py-1 rounded">${esc(a.label)}</button>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  list.scrollTop = list.scrollHeight;
+}
+function sendChat(text){
+  const input = $('chatInput');
+  const v = (text !== undefined ? text : input.value).trim();
+  if(!v) return;
+  if(!text) input.value = '';
+  DB.chat.push({ role:'user', text:v, at:Date.now() });
+  DB.chat = DB.chat.slice(-40);
+  saveDB(); renderChat();
+  const list = $('chatList');
+  const tip = document.createElement('div');
+  tip.className = 'flex gap-2'; tip.id = 'typingTip';
+  tip.innerHTML = `<span class="w-6 h-6 rounded-lg bg-mist text-brand flex items-center justify-center shrink-0 text-[11px]">AI</span>
+    <div class="bg-white border border-line px-3 py-3 rounded-2xl rounded-tl-sm typing"><span></span><span></span><span></span></div>`;
+  list.appendChild(tip);
+  list.scrollTop = list.scrollHeight;
+  setTimeout(() => {
+    const reply = aiReply(v);
+    DB.chat.push({ role:'ai', text:reply.text, actions:reply.actions || [], at:Date.now() });
+    DB.chat = DB.chat.slice(-40);
+    saveDB(); renderChat();
+  }, 700);
+}
+function aiReply(q){
+  const t = q.toLowerCase();
+  const pend = Q.pending().length;
+  if(/周报|日志|报告/.test(t)){
+    const built = buildReport('week','week','all','');
+    if(!built) return { text:'本周还没有记录，先记两笔再来生成周报吧。', actions:[{label:'去记一笔', act:'add'}] };
+    return { text:`根据本周 ${Q.weekRecords().length} 条记录，我拼了一份草稿：\n\n${built.content.slice(0, 260)}…\n\n在「日志 · 周报」里可以继续生成并编辑。`, actions:[{label:'打开报告', act:'reports'}] };
+  }
+  if(/简历|素材/.test(t)){
+    const done = Q.materialsDone();
+    if(!done.length) return { text: Q.confirmed().length ? `你有 ${Q.confirmed().length} 条已确认记录，但还没有确认过的简历素材。可以在记录详情里勾选生成，然后到素材库确认。` : '还没有可用的简历素材。先记几条工作记录，确认沉淀后我再帮你提炼。', actions:[{label:'打开素材库', act:'resume'},{label:'看记录', act:'timeline'}] };
+    return { text:`目前有 ${done.length} 条已确认素材：\n${done.slice(0,5).map(m => '· ' + m.title).join('\n')}\n\n写简历时建议突出「行动 + 可验证结果」，不要夸大数字。`, actions:[{label:'打开素材库', act:'resume'}] };
+  }
+  if(/整理|待确认|待办/.test(t)){
+    if(!pend) return { text:'现在没有待整理的记录，很干净。', actions:[{label:'去记一笔', act:'add'}] };
+    return { text:`你有 ${pend} 条记录等待处理，其中 ${DB.records.filter(r=>r.status==='待确认').length} 条已整理待确认，${DB.records.filter(r=>r.status==='整理中').length} 条正在整理。`, actions:[{label:'去处理', act:'pending'}] };
+  }
+  if(/补什么|建议|还缺|完善/.test(t)){
+    const s = suggestions();
+    if(!s.length) return { text:'资料和记录都比较完整了。下一步可以多写周报，或针对目标岗位补充面试提纲。', actions:[{label:'看成长', act:'growth'}] };
+    return { text:'按优先级，建议你补充：\n' + s.map((x,i) => `${i+1}. ${x}`).join('\n'), actions:[{label:'完善资料', act:'profile'}] };
+  }
+  if(/总结|成长|能力/.test(t)){
+    const abs = Q.abilityStats();
+    if(!DB.records.length) return { text:'还没有记录，暂时无法总结。先写下第一条工作记录吧。', actions:[{label:'去记录', act:'add'}] };
+    return { text:`当前累计 ${DB.records.length} 条记录、${Q.confirmed().length} 条已沉淀，覆盖 ${abs.length} 项能力${abs.length?'：'+abs.slice(0,4).map(([a,c])=>`${a}(${c})`).join('、'):''}。\n本月记录 ${DB.records.filter(r=>(r.date||'').slice(0,7)===iso().slice(0,7)).length} 条。`, actions:[{label:'看成长页', act:'growth'},{label:'生成本月总结', act:'summary'}] };
+  }
+  return { text:'我可以帮你：整理待确认记录、用真实记录生成周报、提炼简历素材、检查资料缺口。\n\n直接说需求，比如「帮我生成这周的周报」。', actions:[{label:'待整理', act:'pending'},{label:'周报', act:'reports'}] };
+}
+function suggestions(){
+  const out = [];
+  if(!Q.profileFilled()) out.push('完善个人信息：至少填写姓名');
+  else if(Q.profileScore() < 60) out.push('补齐学校、专业、求职方向，首页展示会更完整');
+  if(!DB.internships.length) out.push('创建一份实习档案，便于按公司归档记录');
+  if(!DB.records.length) out.push('记录第一条工作内容（哪怕只有一句话）');
+  if(Q.pending().length) out.push(`确认 ${Q.pending().length} 条待整理记录，AI 不会自动入库`);
+  if(Q.confirmed().length && !Q.materialsDone().length) out.push('把已确认记录确认成简历素材');
+  if(!DB.reports.length) out.push('生成第一份周报，检验记录是否够用');
+  if(!DB.knowledge.length) out.push('把可复用的方法存入知识库');
+  return out;
+}
+function aiAction(act){
+  closeAI();
+  if(act === 'pending') openSub('pending');
+  else if(act === 'reports') openSub('reports');
+  else if(act === 'resume') openSub('resume');
+  else if(act === 'profile') openSub('profile');
+  else if(act === 'add') switchTab('add');
+  else if(act === 'timeline') switchTab('timeline');
+  else if(act === 'growth') switchTab('growth');
+  else if(act === 'summary') createSummaryReport();
+}
+function clearChat(){
+  if(!DB.chat.length){ toast('对话已经是空的'); return; }
+  ask('清空对话？','只清除聊天记录，不影响你的记录与资料。','清空',()=>{ DB.chat=[]; saveDB(); renderChat(); toast('对话已清空'); });
+}
+
+/* =========================================================
+   导航角标 / 快捷键 / 初始化
+   ========================================================= */
+function renderNavBadge(){
+  const n = Q.pending().length;
+  const dot = $('navDot');
+  if(!dot) return;
+  dot.textContent = n > 9 ? '9+' : String(n);
+  dot.classList.toggle('hidden', n === 0);
+}
+function init(){
+  DB.records.forEach(r => {
+    if(r.status === '整理中'){
+      r.ai = r.ai || makeDraft(r.text, r.struct);
+      r.status = '待确认';
+    }
+  });
+  saveDB();
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.addEventListener('click', () => switchTab(b.dataset.tab));
+  });
+  $('chatInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Escape') return;
+    if(!$('confirmHost').classList.contains('hidden')){ closeConfirm(); return; }
+    if(!$('sheetHost').classList.contains('hidden')){ closeSheet(); return; }
+    if(!$('aiHost').classList.contains('hidden')){ closeAI(); return; }
+    if(!$('subpage').classList.contains('hidden')){ backSub(); }
+  });
+  window.addEventListener('beforeunload', saveDB);
+  switchTab('home');
+  renderNavBadge();
+}
+init();
+</script>
+
+<script>
+/* =========================================================
+   补充交互：按天查看 / 附件信息 / 素材删除 / 提醒重置 / 报告下载
+   ========================================================= */
+function openDay(date){
+  const rs = DB.records.filter(r => r.date === date).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  openSheet(`${fmtDate(date)} ${weekdayName(date)}`, `<div class="p-4 space-y-2">
+    ${rs.length ? rs.map(recordCard).join('') : '<div class="py-10 text-center"><p class="text-[12px] text-t2">这天还没有记录</p><p class="text-[10px] text-t3 mt-1">补记也可以，AI 会按保存时间归档</p></div>'}
+  </div>`, `<div class="p-3"><button onclick="closeSheet();switchTab('add')" class="press w-full h-10 bg-brand text-white text-[13px] font-medium rounded-lg">记一笔</button></div>`);
+}
+function openFileInfo(rid, idx){
+  const r = DB.records.find(x => x.id === rid);
+  const f = r && r.files ? r.files[idx] : null;
+  if(!f) return;
+  const kb = (f.size/1024).toFixed(1);
+  const ext = (f.name.split('.').pop() || '文件').toUpperCase();
+  openSheet('附件信息', `<div class="p-4">
+    <div class="bg-card border border-line rounded-xl p-4 flex items-center gap-3">
+      <span class="w-10 h-10 rounded-lg bg-mist text-brand flex items-center justify-center text-[10px] font-semibold">${esc(ext.slice(0,4))}</span>
+      <div class="min-w-0">
+        <p class="text-[13px] text-t1 break-all">${esc(f.name)}</p>
+        <p class="text-[10px] text-t3 mt-1">${kb} KB · 原型仅记录文件信息，未上传内容</p>
+      </div>
+    </div>
+    <p class="text-[10px] text-t3 mt-3 leading-relaxed">在正式小程序中，附件会加密上传并在记录详情内预览；当前版本不读取文件内容。</p>
+  </div>`, `<div class="p-3"><button onclick="closeSheet()" class="press w-full h-10 bg-white border border-line text-[13px] text-t2 rounded-lg">关闭</button></div>`);
+}
+function deleteMaterialFromForm(){
+  const id = mEditId;
+  if(!id) return;
+  ask('删除这条素材？', '删除后可在回收站恢复。', '删除', () => {
+    const i = DB.materials.findIndex(x => x.id === id);
+    if(i < 0) return;
+    const [m] = DB.materials.splice(i,1);
+    DB.trash.unshift({ id:'t'+uid(), kind:'material', title:m.title, data:m, at:Date.now() });
+    mEditId = null;
+    saveDB(); backSub(); refresh(); toast('已移入回收站');
+  }, true);
+}
+function resetRemind(){
+  DB.settings.remind = true; DB.settings.weekly = true;
+  saveDB(); renderSub(); renderTab(currentTab); toast('已恢复默认提醒设置');
+}
+function downloadReport(id){
+  const r = DB.reports.find(x => x.id === id);
+  if(!r) return;
+  const html = `<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(r.period)}</title>
+  <style>body{font-family:"Microsoft YaHei",sans-serif;font-size:14px;line-height:1.9;color:#1E302E}pre{white-space:pre-wrap;font-family:inherit}</style></head>
+  <body><pre>${esc(r.content)}</pre></body></html>`;
+  download(`报告-${r.period.replace(/[\\/:*?"<>|]/g,'-')}.doc`, html, 'application/msword');
+  toast('报告已开始下载');
+}
+function useTemplate(k){
+  const tpl = {
+    '会议':'参加……会议，会上要同步项目进度。我负责会议记录，会后整理出……条待办，已同步给相关同事。',
+    '对接':'对接……，对方临时提出……需求。我逐条核对了……，当天返回了一份……页的说明。',
+    '学习':'学习……，需要在一周内能用上。我跟着……练了一遍，现在可以独立完成……。',
+    '事务':'日常事务，要处理……。我按……流程逐项处理，共完成……件，耗时约……小时。'
+  }[k];
+  if(!tpl) return;
+  draft.text = draft.text.trim() ? draft.text.trim() + '\n' + tpl : tpl;
+  renderAdd();
+  const ta = $('recText');
+  if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  toast('已套用模板，把「……」替换成你的真实内容');
+}
+function recentSediments(){
+  const items = [
+    ...DB.materials.slice(0,2).map(m => ({ kind:'素材', title:m.title, sub:m.status, act:`openSub('resume')` })),
+    ...DB.knowledge.slice(0,2).map(k => ({ kind:'知识', title:k.title, sub:k.cat, act:`openSub('knowledge')` }))
+  ].slice(0,3);
+  if(!items.length) return `<p class="text-[11px] text-t3 leading-relaxed">还没有沉淀。确认记录后，素材与知识会出现在这里。</p>
+    <button onclick="openSub('pending')" class="press mt-2.5 h-8 px-3 bg-mist text-brand text-[11px] rounded-md">去待整理</button>`;
+  return `<div class="space-y-1.5">${items.map(x => `<button onclick="${x.act}" class="press w-full flex items-center gap-2 py-1.5 text-left">
+    <span class="text-[9px] px-1.5 py-0.5 rounded bg-subbg text-t3 shrink-0">${x.kind}</span>
+    <span class="text-[11px] text-t2 flex-1 truncate">${esc(x.title)}</span>
+    <span class="text-[10px] text-t3 shrink-0">${esc(x.sub)}</span>
+  </button>`).join('')}</div>`;
+}
+
+/* =========================================================
+   实习档案总览
+   ========================================================= */
+let archFilter = '全部';
+SUB['archive'] = {
+  onOpen(){ archFilter = '全部'; },
+  title:'实习档案',
+  actions(){ return `<button onclick="openSub('archiveForm')" class="press w-8 h-8 flex items-center justify-center text-brand text-[20px] leading-none">+</button>`; },
+  body(){
+    const list = DB.internships.filter(i => archFilter === '全部' || i.status === archFilter);
+    return `<div class="p-4">
+      <div class="flex gap-2 mb-3">
+        ${['全部','进行中','已结束'].map(f => `<button onclick="archFilter='${f}';renderSub()" class="press text-[11px] px-2.5 py-1.5 rounded-md border ${archFilter===f?'bg-brand text-white border-brand font-medium':'bg-card text-t2 border-line'}">${f}</button>`).join('')}
+      </div>
+      ${list.length ? `<div class="space-y-2.5">${list.map(archCard).join('')}</div>` :
+        emptyBox(I.brief, DB.internships.length ? '该状态下没有档案' : '还没有实习档案', DB.internships.length ? '换个筛选条件看看。' : '添加公司、岗位与时间，记录就能按实习归档。', DB.internships.length ? '' : '新建实习档案', "openSub('archiveForm')")}
+      <p class="text-[10px] text-t3 text-center mt-4 leading-relaxed">档案只保存在本机，可随时编辑或删除<br>删除档案不会删除关联记录</p>
+    </div>`;
+  }
+};
+function archCard(i){
+  const recs = DB.records.filter(r => r.internshipId === i.id);
+  const days = daysBetween(i.start, i.end || iso());
+  return `<div class="bg-card border border-line rounded-xl shadow-card p-4">
+    <button onclick="openSub('archiveDetail','${i.id}')" class="press w-full text-left">
+      <div class="flex items-start gap-3">
+        <span class="w-10 h-10 rounded-xl grad-soft text-brand flex items-center justify-center text-[14px] font-semibold shrink-0">${esc(i.company.slice(0,1))}</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[14px] font-medium text-t1 truncate">${esc(i.company)}</p>
+          <p class="text-[11px] text-t3 mt-1 truncate">${esc(i.dept || '未填写部门')} · ${esc(i.role || '未填写岗位')}</p>
+          <p class="text-[10px] text-t3 mt-1">${esc(i.start || '—')} 至 ${esc(i.end || '—')} · ${days} 天 · ${recs.length} 条记录</p>
+        </div>
+        <span class="text-[10px] px-1.5 py-0.5 rounded shrink-0 ${i.status==='进行中'?'bg-mist text-brand':'bg-subbg text-t3'}">${esc(i.status)}</span>
+      </div>
+    </button>
+    <div class="flex gap-2 mt-3">
+      <button onclick="openSub('archiveDetail','${i.id}')" class="press flex-1 h-8 bg-mist text-brand text-[11px] rounded-md">查看详情</button>
+      <button onclick="openSub('archiveForm','${i.id}')" class="press h-8 px-2.5 border border-line rounded-md text-[11px] text-t2">编辑</button>
+      <button onclick="toggleInternshipStatus('${i.id}')" class="press h-8 px-2.5 border border-line rounded-md text-[11px] text-t2">${i.status==='进行中'?'结束实习':'标记进行中'}</button>
+      <button onclick="delInternshipFromList('${i.id}')" class="press w-8 h-8 border border-line rounded-md text-[12px] text-t3">✕</button>
+    </div>
+  </div>`;
+}
+function toggleInternshipStatus(id){
+  const it = DB.internships.find(x => x.id === id);
+  if(!it) return;
+  if(it.status === '进行中'){ it.status = '已结束'; }
+  else {
+    DB.internships.forEach(x => { if(x.status === '进行中') x.status = '已结束'; });
+    it.status = '进行中';
+  }
+  saveDB(); refresh(); toast(it.status === '进行中' ? '已标记为进行中' : '已结束这份实习');
+}
+function delInternshipFromList(id){
+  ask('删除这份实习档案？', '关联记录会保留，但不再归属该实习。', '删除', () => {
+    DB.internships = DB.internships.filter(x => x.id !== id);
+    saveDB(); refresh(); toast('已删除实习档案');
+  }, true);
+}
+
+/* =========================================================
+   全局搜索
+   ========================================================= */
+let gSearch = '';
+SUB['search'] = {
+  onOpen(){ gSearch = ''; },
+  title:'搜索',
+  body(){
+    return `<div class="p-4">
+      <div class="relative mb-4">
+        <input id="gSearchInput" value="${esc(gSearch)}" oninput="gSearch=this.value;renderSearchResults()" placeholder="搜索记录、素材、知识、报告…" class="w-full h-11 bg-card rounded-xl pl-10 pr-3 text-[13px] outline-none border border-line focus:border-lteal shadow-card">
+        <svg class="w-4 h-4 text-t3 absolute left-3.5 top-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-3.5-3.5"/></svg>
+      </div>
+      <div id="searchResults"></div>
+    </div>`;
+  },
+  after(){ renderSearchResults(); }
+};
+function renderSearchResults(){
+  const box = $('searchResults');
+  if(!box) return;
+  const kw = gSearch.trim().toLowerCase();
+  if(!kw){
+    const total = DB.records.length + DB.materials.length + DB.knowledge.length + DB.reports.length + DB.interviews.length;
+    box.innerHTML = `<div class="text-center py-10">
+      <p class="text-[12px] text-t2">输入关键词，搜索你的全部内容</p>
+      <p class="text-[10px] text-t3 mt-1">共 ${total} 项内容可检索</p>
+      <div class="flex gap-1.5 flex-wrap justify-center mt-3">
+        ${['证据','合同','周报','商标'].map(k => `<button onclick="gSearch='${k}';$('gSearchInput').value='${k}';renderSearchResults()" class="press text-[10px] px-2.5 py-1.5 rounded-full bg-white border border-line text-t2">${k}</button>`).join('')}
+      </div>
+    </div>`;
+    return;
+  }
+  const hit = t => String(t || '').toLowerCase().includes(kw);
+  const recs = DB.records.filter(r => hit(r.text) || hit(r.summary) || hit((r.tags||'').join('')) || (r.ai && (hit(r.ai.situation) || hit(r.ai.task) || hit(r.ai.action) || hit(r.ai.result))));
+  const mats = DB.materials.filter(m => hit(m.title) || hit(m.situation) || hit(m.task) || hit(m.action) || hit(m.result) || hit((m.ability||[]).join('')));
+  const knows = DB.knowledge.filter(k => hit(k.title) || hit(k.body) || hit((k.tags||[]).join('')));
+  const reps = DB.reports.filter(r => hit(r.period) || hit(r.content));
+  const ivs = DB.interviews.filter(i => hit(i.company) || hit(i.role) || hit(i.jd));
+  const total = recs.length + mats.length + knows.length + reps.length + ivs.length;
+  if(!total){ box.innerHTML = `<div class="py-12 text-center"><p class="text-[12px] text-t2">没有找到「${esc(gSearch)}」</p><p class="text-[10px] text-t3 mt-1">换个关键词，或先记录一些内容</p></div>`; return; }
+  const block = (title, arr, render) => arr.length ? `<div class="mb-4">
+    <div class="flex items-center gap-2 mb-2"><p class="text-[11px] font-medium text-t1">${title}</p><span class="text-[10px] text-t3">${arr.length}</span><div class="flex-1 h-px bg-line"></div></div>
+    <div class="space-y-1.5">${arr.slice(0,5).map(render).join('')}</div>
+  </div>` : '';
+  box.innerHTML = `<p class="text-[10px] text-t3 mb-3">找到 ${total} 条结果</p>
+    ${block('记录', recs, r => `<button onclick="openRecord('${r.id}')" class="press w-full text-left bg-card border border-line rounded-lg p-3">
+      <p class="text-[12px] text-t1 truncate">${esc((r.ai && r.ai.task) || r.summary || r.text)}</p>
+      <p class="text-[10px] text-t3 mt-1">${fmtDate(r.date)} · ${esc(r.status)}</p></button>`)}
+    ${block('简历素材', mats, m => `<button onclick="openMaterialQuick('${m.id}')" class="press w-full text-left bg-card border border-line rounded-lg p-3">
+      <p class="text-[12px] text-t1 truncate">${esc(m.title)}</p>
+      <p class="text-[10px] text-t3 mt-1">${esc(m.status)} · ${esc((m.ability||[]).join('、') || '无能力标签')}</p></button>`)}
+    ${block('知识库', knows, k => `<button onclick="openKnowledge('${k.id}')" class="press w-full text-left bg-card border border-line rounded-lg p-3">
+      <p class="text-[12px] text-t1 truncate">${esc(k.title)}</p>
+      <p class="text-[10px] text-t3 mt-1">${esc(k.cat)}</p></button>`)}
+    ${block('报告', reps, r => `<button onclick="viewReport('${r.id}')" class="press w-full text-left bg-card border border-line rounded-lg p-3">
+      <p class="text-[12px] text-t1 truncate">${esc(r.period)}</p>
+      <p class="text-[10px] text-t3 mt-1">${esc(r.content.slice(0,40))}…</p></button>`)}
+    ${block('目标岗位', ivs, i => `<button onclick="openSub('interview')" class="press w-full text-left bg-card border border-line rounded-lg p-3">
+      <p class="text-[12px] text-t1 truncate">${esc(i.company || '未填写公司')} · ${esc(i.role || '未填写岗位')}</p>
+      <p class="text-[10px] text-t3 mt-1">${esc(i.jd.slice(0,40))}…</p></button>`)}`;
+}
+function openMaterialQuick(id){
+  const m = DB.materials.find(x => x.id === id);
+  if(!m) return;
+  openSheet(m.title, `<div class="p-4 space-y-2">
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] px-1.5 py-0.5 rounded ${m.status==='已确认'?'bg-mist text-brand':'bg-[#E8F4F6] text-[#2F7F8C]'}">${esc(m.status)}</span>
+      ${(m.ability||[]).map(a => `<span class="text-[10px] text-t3 bg-subbg px-1.5 py-0.5 rounded">${esc(a)}</span>`).join('')}
+    </div>
+    ${[['情境 S',m.situation],['任务 T',m.task],['行动 A',m.action],['结果 R',m.result],['数据依据',m.data]].map(([k,v]) => v ? `<div class="bg-card border border-line rounded-lg p-2.5"><p class="text-[10px] text-t3">${k}</p><p class="text-[12px] text-t2 mt-0.5 leading-relaxed">${esc(v)}</p></div>` : '').join('')}
+  </div>`, `<div class="p-3 flex gap-2">
+    <button onclick="copyText(materialText('${id}'))" class="press flex-1 h-10 border border-line bg-white text-[12px] text-t2 rounded-lg">复制文案</button>
+    <button onclick="closeSheet();openSub('resume')" class="press flex-1 h-10 bg-brand text-white text-[13px] rounded-lg">打开素材库</button>
+  </div>`);
+}
+</script>
+
+</body>
+</html>
